@@ -3,6 +3,7 @@ import { IonButtons, IonContent, IonHeader, IonMenuButton, IonPage, IonTitle, Io
 import { useParams } from 'react-router';
 import ExploreContainer from '../components/ExploreContainer';
 import './Page.css';
+import { PAGE_TO_TITLE } from '../components/constants';
 
 const Page: React.FC = () => {
 
@@ -15,7 +16,7 @@ const Page: React.FC = () => {
           <IonButtons slot="start">
             <IonMenuButton />
           </IonButtons>
-          <IonTitle>{name}</IonTitle>
+          <IonTitle className='ion-text-center'>{PAGE_TO_TITLE[name]}</IonTitle>
         </IonToolbar>
       </IonHeader>
 

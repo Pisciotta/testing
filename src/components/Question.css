@@ -1,0 +1,33 @@
+/* YesNoQuestion.css */
+.question {
+    font-size: 1.5rem;
+    font-weight: bold;
+    text-align: center;
+    margin-bottom: 1rem;
+  }
+  
+  .answerButton-group {
+    display: flex;
+    justify-content: center;
+  }
+  
+  .answerButton {
+    font-size: 1.25rem;
+    padding: 0.5rem 1rem;
+    margin: 0 0.5rem;
+    border-radius: 0.25rem;
+    border: none;
+    background-color: #eee;
+    cursor: pointer;
+    transition: all 0.2s ease-in-out;
+  }
+  
+  .answerButton:hover {
+    transform: scale(1.05);
+  }
+  
+  .answerButton.selected {
+    background-color: #4caf50;
+    color: white;
+  }
+  
