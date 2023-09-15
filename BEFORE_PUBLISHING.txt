@@ -1,1 +1,2 @@
 Change Firebase Rules
+Remove <React.StrictMode> in index.tsx
