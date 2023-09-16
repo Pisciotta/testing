@@ -1,6 +1,6 @@
 import { IonButton, IonAlert } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { convertEventToString, fetchFutureEvents } from './foo';
+import { addUserIdToQueue, convertEventToString, fetchFutureEvents, getUserQueue, removeEventFromUser } from './foo';
 import { USER_ID } from './constants';
 
 interface Ad {
@@ -9,55 +9,43 @@ interface Ad {
   participated: boolean;
 }
 
-interface EventData {
-  event: {
-    id : string;
-    userId: string;
-    date: string;
-    time: string;
-    place1: string;
-    place2: string;
-    adDescription: string;
-    code: string;
-    males: number;
-    females: number;
-  };
-}
-
 
 export const BulletinBoard: React.FC = () => {
   const [adsState, setAdsState] = useState<Ad[]>();
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [showAlert, setShowAlert] = useState(false);
-  const [eventsFetchted, setEventsFetchted] = useState(false);
-
-  
+  const [eventsFetchted, setEventsFetchted] = useState(false);  
 
   const handleParticipateClick = (ad: Ad) => {
     setSelectedAd(ad);
     setShowAlert(true);
   };
 
-  const handleAlertDismiss = (participated: boolean) => {
-    if (participated && selectedAd && adsState !== undefined) {
+  const handleAlertDismiss = async (participated: boolean) => {
+    if (selectedAd && adsState !== undefined) {
       setAdsState((prevAds) =>
-        prevAds?.map((ad) => (ad.id === selectedAd.id ? { ...ad, participated: true } : ad))
+        prevAds?.map((ad) => (ad.id === selectedAd.id ? { ...ad, participated: participated } : ad))
       );
+      const userid = await USER_ID();
+      if (participated) {
+        addUserIdToQueue(selectedAd.id, userid);
+      } else {
+        removeEventFromUser(selectedAd.id);
+      }
     }
     setSelectedAd(null);
     setShowAlert(false);
   };
 
-  //
-
   useEffect(() => {
     if(eventsFetchted){
       return;
     }
+
     const fetchEvents = async () => {
+      const currentUserQueue = await getUserQueue();
       const events = await fetchFutureEvents() as any;
       const userid = await USER_ID();
-      console.log(events);
       const eventsFromOtherUsers = events.filter((event:any) => event.event?.userId !== userid);
       const sortedEventsFromOtherUsers = eventsFromOtherUsers.sort((a:any, b:any) => {
         if (a.event.date < b.event.date) {
@@ -71,7 +59,7 @@ export const BulletinBoard: React.FC = () => {
 
       const eventsToAds = sortedEventsFromOtherUsers.map((event:any, idx:number) => {
         return {
-          id: event.event.date+event.event.time+idx,
+          id: event.id,
           text: convertEventToString(
             event.event.date,
             event.event.time,
@@ -80,14 +68,16 @@ export const BulletinBoard: React.FC = () => {
             event.event.males,
             event.event.females
           ),
-          participated: false
+          participated:  currentUserQueue.includes(event.id) ? true : false
         }
       });
-
+      
       setAdsState(eventsToAds);
       setEventsFetchted(true);
     };
     fetchEvents();
+
+    
   }, []);
 
   return (
@@ -102,7 +92,7 @@ export const BulletinBoard: React.FC = () => {
                 size="small"
                 color={ad.participated ? 'warning' : 'primary'}
                 onClick={() => handleParticipateClick(ad)}>
-                Partecipa
+                {ad.participated ? "Non partecipare" : "Partecipa"}
             </IonButton>
           </p>
         </div>
@@ -111,9 +101,14 @@ export const BulletinBoard: React.FC = () => {
       
       <IonAlert
         isOpen={showAlert}
-        onDidDismiss={() => handleAlertDismiss(false)}
+        onDidDismiss={() => handleAlertDismiss(selectedAd?.participated || false)}
         header={'Conferma'}
-        message={'Confermi di voler partecipare a questo evento? '}
+        message={
+          !selectedAd?.participated ? 
+          'Confermi di voler partecipare a questo evento? '
+          :
+          'Confermi di non voler più partecipare a questo evento? '
+        }
         buttons={[
           {
             text: 'Annulla',
@@ -121,7 +116,7 @@ export const BulletinBoard: React.FC = () => {
           },
           {
             text: 'OK',
-            handler: () => handleAlertDismiss(true),
+            handler: () => handleAlertDismiss(selectedAd?.participated ? false : true),
           },
         ]}
       />

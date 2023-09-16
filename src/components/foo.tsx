@@ -1,6 +1,6 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter, deleteDoc } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter, deleteDoc, arrayRemove } from "firebase/firestore";
 import { Storage } from '@ionic/storage';
 import { USER_ID } from "./constants";
 
@@ -166,6 +166,96 @@ export async function deleteEventById(id: string): Promise<void> {
     console.error("Error deleting document: ", error);
   }
 }
+
+// Add the userId to the list associated to the eventId. List elements must be unique.
+export async function addUserIdToQueue(eventId: string, userId: string): Promise<void> {
+  const eventDocRef = doc(db, "queue", eventId);
+
+  try {
+    const docSnap = await getDoc(eventDocRef);
+
+    if (docSnap.exists()) {
+      await updateDoc(eventDocRef, { userIds: arrayUnion(userId) });
+    } else {
+      await setDoc(eventDocRef, { userIds: [userId] });
+    }
+
+    await addEventToUserQueue(eventId, userId);
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+}
+
+async function addEventToUserQueue(eventId: string, userId: string): Promise<void> {
+  const eventDocRef = doc(db, "users", userId);
+
+  try {
+    const docSnap = await getDoc(eventDocRef);
+
+    if (docSnap.exists()) {
+      await updateDoc(eventDocRef, { queue: arrayUnion(eventId) });
+    } else {
+      await setDoc(eventDocRef, { queue: [eventId] });
+    }
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+}
+
+export async function getUserQueue(): Promise<any> {
+  const userId = await USER_ID();
+  const userDocRef = doc(db, "users", userId);
+
+  try {
+    const docSnap = await getDoc(userDocRef);
+
+    if (docSnap.exists()) {
+      const data = docSnap.data();
+      return data?.queue ?? [];
+    } else {
+      console.log("No such document!");
+      return [];
+    }
+  } catch (error) {
+    console.error("Error getting document:", error);
+  }
+}
+
+
+export async function removeEventFromUser(eventId:string): Promise<void> {
+  const userid = await USER_ID();
+  const docRef = doc(db, "users", userid);
+  try {
+    await updateDoc(docRef, { queue: arrayRemove(eventId) });
+    await removeUserFromQueue(eventId);
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+}
+
+async function removeUserFromQueue(eventId:string): Promise<void> {
+  const userid = await USER_ID();
+  const docRef = doc(db, "queue", eventId);
+  try {
+    await updateDoc(docRef, { userIds: arrayRemove(userid) });
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+}
+
+
+export async function updatePoints(points: number): Promise<void> {
+  try {
+    const userId = await USER_ID();
+    const docRef = doc(db, "users", userId);
+    await updateDoc(docRef, { points: points });
+    console.log("Document successfully updated!");
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
+}
+
+
 
 
 
