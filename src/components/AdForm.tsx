@@ -57,10 +57,7 @@ const AdForm: React.FC = () => {
       marginBottom:"10px"
     };
 
-    const coolLabelStyle = {
-      fontSize: '18px',
-      marginBottom:"10px"
-    };
+
 
     /* VALIDATE ALL FORM DATA BELOW */
     const formValidator = () => {
@@ -141,19 +138,40 @@ const AdForm: React.FC = () => {
     setAdDescription('');
   }
 
+  const centerMe = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    marginBottom: '0px',
+    paddingBottom: '0px',
+    width: '100%'
+  }
+
+
 
 
   return (
         <>
-            <IonAlert isOpen={formMessage !== ""} onDidDismiss={() => setFormMessage('')} header="Attenzione" message={formMessage} buttons={['OK']} />
+            <IonAlert
+            isOpen={formMessage !== ""}
+            onDidDismiss={() => setFormMessage('')}
+            header="Attenzione"
+            message={formMessage}
+            buttons={['OK']} />
+
             <IonAlert
             isOpen={validated}
-            onDidDismiss={() => {setValidated(false); resetData(); history.push('/meet');}}
-            header="Complimenti!" message={"Annuncio pubblicato con successo!"} buttons={['OK']} />
+            onDidDismiss={() => {history.push('/host')}}
+            header="Complimenti!"
+            message={"Annuncio pubblicato con successo!"}
+            buttons={['OK']} />
 
-            { validated === false &&
+
             <>
-            <IonLabel style={coolLabelStyle}>Seleziona data e ora:</IonLabel>
+            
+            <IonLabel style={centerMe}>Seleziona data e ora:</IonLabel>
+            
+            <div style={centerMe}>
             <IonDatetime
               presentation='date-time'
               preferWheel={true}
@@ -165,6 +183,7 @@ const AdForm: React.FC = () => {
               >
                 
             </IonDatetime>
+            </div>
 
             <IonInput style={inputStyle}
             placeholder="Luogo IMPRECISO (= visibile a tutti)"
@@ -203,7 +222,7 @@ const AdForm: React.FC = () => {
               <IonNote><b>(*)</b> Il numero comprende tutti i partecipanti, compreso l&apos;organizzatore.</IonNote>
             </p>
             </>
-            }
+            
         </>
   );
 };

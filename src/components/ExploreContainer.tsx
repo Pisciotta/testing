@@ -6,6 +6,7 @@ import AdForm from './AdForm';
 import CommunityRules from './Rules';
 import FeedbackForm from './Feedback';
 import FAQPage from './Faq';
+import { HostAds } from './HostAds';
 
 interface ContainerProps {
   name: string;
@@ -21,6 +22,7 @@ const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
     { name === "publish" ? <AdForm /> : null }
     { name === "rules" ? <CommunityRules /> : null}
     { name === "faq" ? <><FAQPage /><FeedbackForm /></>: null}
+    { name === "host" ? <HostAds /> : null}
       
     </div>
   );

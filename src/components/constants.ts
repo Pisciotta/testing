@@ -9,6 +9,7 @@ export const PAGE_TO_TITLE: { [key:string] : string} = {
     "meet":"Partecipa",
     "test": "Questionario",
     "publish": "Ospita",
-    "rules": "Regole"};
+    "rules": "Regole",
+    "host": "I tuoi prossimi eventi",};
 
 export const ADS = [{"id":1, "text":"Testo annuncio"}];

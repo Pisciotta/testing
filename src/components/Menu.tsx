@@ -12,7 +12,7 @@ import {
 } from '@ionic/react';
 
 import { useLocation } from 'react-router-dom';
-import { helpCircle, listCircle, newspaper, paperPlaneOutline, paperPlaneSharp, pencil, warningOutline, warningSharp } from 'ionicons/icons';
+import { heartCircle, help, helpBuoy, helpCircle, listCircle, newspaper, paperPlaneOutline, paperPlaneSharp, pencil, people, peopleOutline, person, textSharp, warningOutline, warningSharp } from 'ionicons/icons';
 import './Menu.css';
 import {  SCORE } from './constants';
 
@@ -33,8 +33,8 @@ const appPages: AppPage[] = [
   {
     title: 'Questionario',
     url: '/test',
-    iosIcon: listCircle,
-    mdIcon: listCircle
+    iosIcon: person,
+    mdIcon:  person
   },
   {
     title: 'Chiedi',
@@ -45,14 +45,20 @@ const appPages: AppPage[] = [
   {
     title: 'Incontra',
     url: '/meet',
-    iosIcon: newspaper,
-    mdIcon: newspaper
+    iosIcon: people,
+    mdIcon: peopleOutline
   },
   {
     title: 'Pubblica',
     url: '/publish',
     iosIcon: pencil,
     mdIcon: pencil
+  },
+  {
+    title: 'I tuoi eventi',
+    url: '/host',
+    iosIcon: listCircle,
+    mdIcon: listCircle
   },
   {
     title: 'Invita',

@@ -1,7 +1,8 @@
 // Import the functions you need from the SDKs you need
 import { initializeApp } from "firebase/app";
-import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter } from "firebase/firestore";
+import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter, deleteDoc } from "firebase/firestore";
 import { Storage } from '@ionic/storage';
+import { USER_ID } from "./constants";
 
 // Your web app's Firebase configuration
 const firebaseConfig = {
@@ -99,18 +100,30 @@ export async function storeUserAd(
 
 }
 
-export async function fetchFutureEvents() {
+export async function fetchFutureEvents(userId: string | undefined = undefined) {
   const now = new Date();
   // Convert now.toISOString() to a string in the format YYYYMMDD
   const nowString = now.toISOString().slice(0, 10).replace(/-/g, '');
 
-  const eventsQuery = query(
-    collection(db, 'ads'),
-    where("event.date", ">=", nowString)
-  );
+  let eventsQuery;
+  // If userId is defined, get events for that user
+  if (userId) {
+    eventsQuery = query(
+      collection(db, 'ads'),
+      where("event.date", ">=", nowString),
+      where("event.userId", "==", userId)
+    );
+  }else{
+    // If userId is undefined, get all events from other users
+    eventsQuery = query(
+      collection(db, 'ads'),
+      where("event.date", ">=", nowString)
+    );
   
+  }  
   const querySnapshot = await getDocs(eventsQuery);
-  const futureEvents = querySnapshot.docs.map(doc => doc.data());
+  const futureEvents = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+
   return futureEvents;
 }
   
@@ -146,6 +159,13 @@ export function convertEventToString(
   return finalStr;
 }
 
+export async function deleteEventById(id: string): Promise<void> {
+  try {
+    await deleteDoc(doc(db, "ads", id));
+  } catch (error) {
+    console.error("Error deleting document: ", error);
+  }
+}
 
 
 
