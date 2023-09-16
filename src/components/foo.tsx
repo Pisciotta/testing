@@ -92,8 +92,8 @@ export async function storeUserAd(
       females: females
     };
 
-    // Get random number between 0 and 999, padded with zeros to length 3
-    const randomNumber = Math.floor(Math.random() * 1000).toString().padStart(3, '0');
+    // Get random number between 0 and 99999, padded with zeros to length 5
+    const randomNumber = Math.floor(Math.random() * 100000).toString().padStart(5, '0');
 
     // Save the event to Firebase to a document having the time as name
     await setDoc(doc(db, "ads", date+time+randomNumber), {event});
