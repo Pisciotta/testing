@@ -23,20 +23,22 @@ import '@ionic/react/css/display.css';
 
 /* Theme variables */
 import './theme/variables.css';
+import SignIn from './pages/SignIn';
 
 setupIonicReact();
 
 const App: React.FC = () => {
-  
+  // Check if the user is authenticated from local storage
+  const isAuthenticated = localStorage.getItem('isAuthenticated');
+  if (!isAuthenticated){
+    return <SignIn />;
+  }
   return (
     <IonApp>
       <IonReactRouter>
         <IonSplitPane contentId="main">
           <Menu />
           <IonRouterOutlet id="main">
-          <Route path="/" exact={true}>
-              <Redirect to="/Inbox" />
-            </Route>
             <Route path="/:name" exact={true}>
               <Page />
             </Route>

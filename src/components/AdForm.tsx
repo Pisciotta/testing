@@ -30,17 +30,19 @@ const AdForm: React.FC = () => {
       }
 
       const uid = await USER_ID();
-      storeUserAd(
-        uid,
-        place1,
-        place2,
-        date,
-        time,
-        adDescription,
-        code,
-        males,
-        females
-      )
+      if(uid){
+        storeUserAd(
+          uid,
+          place1,
+          place2,
+          date,
+          time,
+          adDescription,
+          code,
+          males,
+          females
+        )
+      }
     }
 
     const inputStyle = {

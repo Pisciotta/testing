@@ -70,6 +70,16 @@ const appPages: AppPage[] = [
 
 
 const Menu: React.FC = () => {
+  const [score, setScore] = React.useState(0);
+
+  React.useEffect(() => {
+    const getScore = async () => {
+      const score = await SCORE(0);
+      setScore(score);
+    };
+
+    getScore();
+  }, []);
   const location = useLocation();
 
   return (
@@ -77,7 +87,7 @@ const Menu: React.FC = () => {
       <IonContent>
         <IonList id="inbox-list" lines="none">
           <IonListHeader>Punteggio</IonListHeader>
-          <IonNote>{SCORE}</IonNote>
+          <IonNote>{score}</IonNote>
           {appPages.map((appPage, index) => {
             return (
               <IonMenuToggle key={index} autoHide={false}>

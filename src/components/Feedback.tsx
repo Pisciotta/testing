@@ -13,9 +13,12 @@ const FeedbackForm: React.FC = () => {
 
   const handleSubmit = async () => {
     // Handle the submission of the feedback
-    storeUserFeedback(await USER_ID(), feedback);
-    setFeedback('');
-    setShowModal(true);
+    const uid = await USER_ID();
+    if(uid){
+      storeUserFeedback(uid, feedback);
+      setFeedback('');
+      setShowModal(true);
+    }
   };
 
   const thanksForYourFeedback = (

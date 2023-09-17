@@ -38,7 +38,11 @@ export const HostAds: React.FC = () => {
       return;
     }
     const fetchEvents = async () => {
-      const events = (await fetchFutureEvents(await USER_ID())).sort((a:any, b:any) => {
+      const uid = await USER_ID();
+      if(!uid){
+        return;
+      }
+      const events = (await fetchFutureEvents(uid)).sort((a:any, b:any) => {
         if (a.event.date < b.event.date) {
           return -1;
         }

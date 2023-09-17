@@ -7,16 +7,16 @@ import CommunityRules from './Rules';
 import FeedbackForm from './Feedback';
 import FAQPage from './Faq';
 import { HostAds } from './HostAds';
+import SignIn from '../pages/SignIn';
 
 interface ContainerProps {
   name: string;
 }
 
-const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
+const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {  
 
   return (
     <div className="container">
-      
     { name === "test" ? <Test /> : null}
     { name === "meet" ? <BulletinBoard /> : null}
     { name === "publish" ? <AdForm /> : null }

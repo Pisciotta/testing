@@ -53,7 +53,11 @@ const Test: React.FC = () => {
     useEffect(() => {
         // Load givenAnswersDict from getUserQuestionnaire
         const loadGivenAnswersDict = async () => {
-            const dict = await getUserQuestionnaire(await USER_ID());
+            const uid = await USER_ID();
+            if(!uid){
+                return;
+            }
+            const dict = await getUserQuestionnaire(uid);
             setGivenAnswersDict(dict);
         };
         loadGivenAnswersDict();

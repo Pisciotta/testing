@@ -1,7 +1,7 @@
 import { IonButton, IonAlert } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { addUserIdToQueue, convertEventToString, fetchFutureEvents, getUserQueue, removeEventFromUser } from './foo';
-import { USER_ID } from './constants';
+import { addUserIdToQueue, convertEventToString, fetchFutureEvents, getUserQueue, removeEventFromUser, updatePoints } from './foo';
+import { SCORE, USER_ID } from './constants';
 
 interface Ad {
   id: string;
@@ -26,11 +26,13 @@ export const BulletinBoard: React.FC = () => {
       setAdsState((prevAds) =>
         prevAds?.map((ad) => (ad.id === selectedAd.id ? { ...ad, participated: participated } : ad))
       );
-      const userid = await USER_ID();
+
+      const score = await SCORE(-5);
       if (participated) {
-        addUserIdToQueue(selectedAd.id, userid);
+        await addUserIdToQueue(selectedAd.id);
+        await updatePoints(score);
       } else {
-        removeEventFromUser(selectedAd.id);
+        await removeEventFromUser(selectedAd.id);
       }
     }
     setSelectedAd(null);

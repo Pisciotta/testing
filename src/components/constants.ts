@@ -1,9 +1,15 @@
+import { getPoints, updatePoints } from "./foo";
 
 export const USER_ID = async () => {
-    return "123TEST";
+    // Load user id from local storage
+    return await localStorage.getItem("userId");
 }
 
-export const SCORE = 120;
+export const SCORE = async (delta = 0) => {
+    const points = await getPoints()+delta;
+    updatePoints(points);
+    return points;
+};
 export const PAGE_TO_TITLE: { [key:string] : string} = {
     "faq":"Chiedi",
     "meet":"Partecipa",
