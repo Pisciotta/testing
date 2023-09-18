@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useEffect } from 'react';
 import './ExploreContainer.css';
 import Test from './Test';
 import { BulletinBoard } from './Bulletin';
@@ -7,13 +7,27 @@ import CommunityRules from './Rules';
 import FeedbackForm from './Feedback';
 import FAQPage from './Faq';
 import { HostAds } from './HostAds';
-import SignIn from '../pages/SignIn';
+import { logoutUser } from './foo';
+
 
 interface ContainerProps {
   name: string;
 }
 
 const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {  
+  useEffect(() => {
+  if(name === "logout"){
+    // Logout user
+    const logout = async () => {
+      await logoutUser();
+      // Go to signin page
+      window.location.href = "/";
+      
+    }
+    logout();
+  }
+  }, [name]);
+
 
   return (
     <div className="container">

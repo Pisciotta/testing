@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonNote } from '@ionic/react';
 import 'firebase/auth';
-import { addLoginUser, firebaseConfig } from '../components/foo';
+import { addLoginUser, firebaseConfig, isUserAuthenticated, storeUserId } from '../components/foo';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
@@ -13,39 +13,31 @@ if (!firebase.apps.length) {
 }
 
 const SignIn: React.FC = () => {
-  const signInWithGoogle = () => {
-    const provider = new firebase.auth.GoogleAuthProvider();
-    firebase.auth().signInWithPopup(provider)
-      .then((result) => {
-        // Check if credential exists
-        if (result.credential ) {
-          const credential = result.credential as firebase.auth.OAuthCredential;
-          
-          // This gives you a Google Access Token.
-          // You can use it to access the Google API.
-          const token = credential.accessToken;
-        }
-        
-        
-        // The signed-in user info.
-        const user = result.user;
-        
-        if(user){
-          addLoginUser(user.uid, user.email, user.displayName, user.photoURL);
-          // add user id to local storage
-          localStorage.setItem('isAuthenticated', 'true');
-          localStorage.setItem('userId', user.uid);
-          // Redirect to home page
-          window.location.href = '/';
+  const [isAuth, setIsAuth] = useState(false);
 
-        } 
-      }).catch((error) => {
-        // Handle Errors here.
-        console.error(error);
-      });
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authStatus = await isUserAuthenticated();
+      setIsAuth(authStatus);
+      
+    }
+    checkAuth();
+  }, []);
+
+  const signInWithGoogle = async () => {
+    try {
+      const provider = new firebase.auth.GoogleAuthProvider();
+      const result = await firebase.auth().signInWithPopup(provider);
+      
+      if (result.user) {
+        await addLoginUser(result.user.uid, result.user.email, result.user.displayName, result.user.photoURL);
+        await storeUserId(result.user.uid);
+        setIsAuth(true);
+      }
+    } catch (error) {
+      console.error(error);
+    }
   }
-  
-  
 
   return (
     <IonPage>

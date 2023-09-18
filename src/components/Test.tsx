@@ -1,7 +1,6 @@
 import React, { useEffect } from 'react';
 import { Question } from './Question';
-import { getUserQuestionnaire, storeUserQuestionnaire } from './foo';
-import { USER_ID } from './constants';
+import { getUserId, getUserQuestionnaire, storeUserQuestionnaire } from './foo';
       
 const Test: React.FC = () => {
     
@@ -53,7 +52,7 @@ const Test: React.FC = () => {
     useEffect(() => {
         // Load givenAnswersDict from getUserQuestionnaire
         const loadGivenAnswersDict = async () => {
-            const uid = await USER_ID();
+            const uid = await getUserId();
             if(!uid){
                 return;
             }
@@ -64,12 +63,6 @@ const Test: React.FC = () => {
     }, []);
 
 
-
-
-    
-    
-
-
     useEffect(() => {
         const storeData = async () => {
             DeleteEmptyAnswersFromGivenAnswersDict();
@@ -77,7 +70,7 @@ const Test: React.FC = () => {
             setAnswersCounter(counter);
     
             if (counter === questions.length) {
-                await storeUserQuestionnaire(await USER_ID(), givenAnswersDict);
+                await storeUserQuestionnaire(await getUserId(), givenAnswersDict);
             }
         };
     

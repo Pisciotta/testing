@@ -1,4 +1,4 @@
-import React from 'react';
+import React, { useContext } from 'react';
 import {
   IonContent,
   IonIcon,
@@ -12,9 +12,9 @@ import {
 } from '@ionic/react';
 
 import { useLocation } from 'react-router-dom';
-import { heartCircle, help, helpBuoy, helpCircle, listCircle, newspaper, paperPlaneOutline, paperPlaneSharp, pencil, people, peopleOutline, person, textSharp, warningOutline, warningSharp } from 'ionicons/icons';
+import { exit, heartCircle, help, helpBuoy, helpCircle, listCircle, newspaper, paperPlaneOutline, paperPlaneSharp, pencil, people, peopleOutline, person, textSharp, warningOutline, warningSharp } from 'ionicons/icons';
 import './Menu.css';
-import {  SCORE } from './constants';
+import {  SCORE, UserContext } from './constants';
 
 interface AppPage {
   url: string;
@@ -65,21 +65,20 @@ const appPages: AppPage[] = [
     url: '/invite',
     iosIcon: paperPlaneOutline,
     mdIcon: paperPlaneSharp
+  },
+  {
+    title: 'Esci',
+    url: '/logout',
+    iosIcon: exit,
+    mdIcon: exit
   }
 ];
 
 
 const Menu: React.FC = () => {
-  const [score, setScore] = React.useState(0);
+  const { score } = useContext(UserContext);
+  
 
-  React.useEffect(() => {
-    const getScore = async () => {
-      const score = await SCORE(0);
-      setScore(score);
-    };
-
-    getScore();
-  }, []);
   const location = useLocation();
 
   return (

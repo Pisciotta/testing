@@ -1,7 +1,6 @@
 import { IonButton, IonAlert } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { convertEventToString, deleteEventById, fetchFutureEvents } from './foo';
-import { USER_ID } from './constants';
+import { convertEventToString, deleteEventById, fetchFutureEvents, fetchQueue, getUserId } from './foo';
 
 interface Ad {
   id: string;
@@ -13,7 +12,7 @@ export const HostAds: React.FC = () => {
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [showAlert, setShowAlert] = useState(false);
   const [eventsFetchted, setEventsFetchted] = useState(false);
-
+  const [queue, setQueue] = useState<string[] | undefined>([]);
 
   const handleDeleteClick = (ad: Ad) => {
     setSelectedAd(ad);
@@ -38,7 +37,7 @@ export const HostAds: React.FC = () => {
       return;
     }
     const fetchEvents = async () => {
-      const uid = await USER_ID();
+      const uid = await getUserId();
       if(!uid){
         return;
       }
@@ -51,6 +50,8 @@ export const HostAds: React.FC = () => {
         }
         return 0;
       });
+
+      
 
       setAdsState(events.map((event:any, idx:number) => {
         return {
@@ -65,11 +66,15 @@ export const HostAds: React.FC = () => {
           )
         }
       }));
+
+      setQueue(await Promise.all(events.map((event:any) => fetchQueue(event.id))));
+
       setEventsFetchted(true);
     };
     fetchEvents();
   }, []);
 
+  console.log("queue",queue)
   return (
     <>
       {adsState?.map((ad) => (

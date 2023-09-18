@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonInput, IonButton, IonLabel, IonText, IonTextarea } from '@ionic/react';
-import { storeUserFeedback } from './foo';
-import { USER_ID } from './constants';
+import { getUserId, storeUserFeedback } from './foo';
 
 const FeedbackForm: React.FC = () => {
   const [feedback, setFeedback] = useState('');
@@ -13,7 +12,7 @@ const FeedbackForm: React.FC = () => {
 
   const handleSubmit = async () => {
     // Handle the submission of the feedback
-    const uid = await USER_ID();
+    const uid = await getUserId();
     if(uid){
       storeUserFeedback(uid, feedback);
       setFeedback('');

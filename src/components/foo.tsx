@@ -2,7 +2,10 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter, deleteDoc, arrayRemove } from "firebase/firestore";
 import { Storage } from '@ionic/storage';
-import { USER_ID } from "./constants";
+import { INITIAL_SCORE } from "./constants";
+import firebase from 'firebase/compat/app';
+import 'firebase/compat/auth';
+
 
 // Your web app's Firebase configuration
 export const firebaseConfig = {
@@ -169,11 +172,20 @@ export async function deleteEventById(id: string): Promise<void> {
   }
 }
 
+// Get sex from locally stored questionnaire
+export async function getQuestionnaireString(): Promise<string[]> {
+  await store.create();
+  const localQuestionnaire = await store.get('questionnaire');
+  return Object.values(localQuestionnaire);
+}
+
 // Add the userId to the list associated to the eventId. List elements must be unique.
-export async function addUserIdToQueue(eventId: string): Promise<void> {
+export async function addUserToQueue(eventId: string): Promise<void> {
   const eventDocRef = doc(db, "queue", eventId);
-  const userId = await USER_ID();
-  if (!userId) {
+  const user = {id:await getUserId(), q:await getQuestionnaireString()};
+  const userIdAndSex = user.id+"-"+user.q;
+
+  if (!user) {
     console.error("User id not found");
     return;
   }
@@ -182,12 +194,12 @@ export async function addUserIdToQueue(eventId: string): Promise<void> {
     const docSnap = await getDoc(eventDocRef);
 
     if (docSnap.exists()) {
-      await updateDoc(eventDocRef, { userIds: arrayUnion(userId) });
+      await updateDoc(eventDocRef, { userIds: arrayUnion(userIdAndSex) });
     } else {
-      await setDoc(eventDocRef, { userIds: [userId] });
+      await setDoc(eventDocRef, { userIds: [userIdAndSex] });
     }
 
-    await addEventToUserQueue(eventId, userId);
+    await addEventToUserQueue(eventId, user.id);
   } catch (error) {
     console.error("Error updating document: ", error);
   }
@@ -210,7 +222,7 @@ async function addEventToUserQueue(eventId: string, userId: string): Promise<voi
 }
 
 export async function getUserQueue(): Promise<any> {
-  const userId = await USER_ID();
+  const userId = await getUserId();
   if (!userId) {
     console.error("User id not found");
     return [];
@@ -234,7 +246,7 @@ export async function getUserQueue(): Promise<any> {
 
 
 export async function removeEventFromUser(eventId:string): Promise<void> {
-  const userid = await USER_ID();
+  const userid = await getUserId();
   if(!userid){
     console.error("User id not found");
     return;
@@ -249,7 +261,7 @@ export async function removeEventFromUser(eventId:string): Promise<void> {
 }
 
 async function removeUserFromQueue(eventId:string): Promise<void> {
-  const userid = await USER_ID();
+  const userid = await getUserId();
   const docRef = doc(db, "queue", eventId);
   try {
     await updateDoc(docRef, { userIds: arrayRemove(userid) });
@@ -261,40 +273,41 @@ async function removeUserFromQueue(eventId:string): Promise<void> {
 
 export async function updatePoints(points: number): Promise<void> {
   try {
-    const userId = await USER_ID();
+    const userId = await getUserId();
     if (!userId) {
       console.error("User id not found");
       return;
     }
     const docRef = doc(db, "users", userId);
     await updateDoc(docRef, { points: points });
-    console.log("Document successfully updated!");
   } catch (error) {
-    console.error("Error updating document: ", error);
+    //console.error("Error updating document: ", error);
   }
 }
 
 export async function getPoints(): Promise<number> {
   try {
-    const userId = await USER_ID();
+    const userId = await getUserId();
     if(!userId){
       console.error("User id not found");
-      return 0;
+      return INITIAL_SCORE;
     }
     const docRef = doc(db, "users", userId);
     const docSnap = await getDoc(docRef);
     if (docSnap.exists()) {
       const data = docSnap.data();
-      return data?.points ?? 0;
+      return data?.points ?? INITIAL_SCORE;
     } else {
       //console.log("No such document!");
-      return 0;
+      return INITIAL_SCORE;
     }
   } catch (error) {
     //console.error("Error getting document:", error);
-    return 0;
+    return INITIAL_SCORE;
   }
 }
+
+
 
 
 // Add login user credentials (userid, email, name, photoURL) to the "logins" collection
@@ -311,6 +324,72 @@ export async function addLoginUser(
   }
 }
 
+// Check if user is authenticated
+export async function isUserAuthenticated(): Promise<boolean> {
+  // Check local isAuthenticated variable
+  await store.create();
+  const localIsAuthenticated = await store.get('isAuthenticated');
+  
+  if (localIsAuthenticated === true) {
+    return true;
+  }else{
+    // Check if user is logged in on Firebase
+    const userId = await getUserId();
+    console.log("userId", userId);
+    if (!userId) {
+      //console.error("User id not found");
+      return false;
+    }
+    const docRef = doc(db, "logins", userId);
+    const docSnap = await getDoc(docRef);
+    const isAuthenticated = docSnap.exists();
+    // Store isAuthenticated locally
+    await store.set('isAuthenticated', isAuthenticated);
+    // Store userId locally
+    await store.set('userId', userId);
+
+    return isAuthenticated;
+  }
+}
+
+// Store user id locally
+export async function storeUserId(userId: string) {
+  await store.create();
+  await store.set('userId', userId);
+}
+
+
+// Function to get user id
+export async function getUserId(): Promise<string> {
+  // Check local userId variable
+  await store.create();
+  const localUserId = await store.get('userId');
+  return localUserId;
+}
+
+// Function to log out user
+export async function logoutUser() {
+  await store.create();
+  await store.remove('isAuthenticated');
+  await store.remove('userId');
+  await store.remove('questionnaire');
+  await store.remove('userCode');
+  await store.remove('userPoints');  
+  await firebase.auth().signOut();
+}
+
+// Fetch list of users in Firebase queue/eventId/userIds
+export async function fetchQueue(eventId: string): Promise<any> {
+  const docRef = doc(db, "queue", eventId);
+  const docSnap = await getDoc(docRef);
+  if (docSnap.exists()) {
+    const data = docSnap.data();
+    return data?.userIds ?? [];
+  } else {
+    console.log("No such document!");
+    return [];
+  }
+}
 
 // Function to store unique code for user
 async function storeUserCode(userId: string, code: string) {

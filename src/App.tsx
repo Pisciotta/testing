@@ -1,7 +1,7 @@
-import React from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import { IonApp, IonRouterOutlet, IonSplitPane, setupIonicReact } from '@ionic/react';
 import { IonReactRouter } from '@ionic/react-router';
-import { Redirect, Route } from 'react-router-dom';
+import { Redirect, Route, Switch } from 'react-router-dom';
 import Menu from './components/Menu';
 import Page from './pages/Page';
 
@@ -24,28 +24,59 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import SignIn from './pages/SignIn';
+import { getPoints, isUserAuthenticated } from './components/foo';
+import { INITIAL_SCORE, UserContext } from './components/constants';
 
 setupIonicReact();
 
 const App: React.FC = () => {
-  // Check if the user is authenticated from local storage
-  const isAuthenticated = localStorage.getItem('isAuthenticated');
-  if (!isAuthenticated){
-    return <SignIn />;
+  const [isAuth, setIsAuth] = useState(false);
+  const [score, setScore] = useState(INITIAL_SCORE);
+  const [dataLoaded, setDataLoaded] = useState(false);
+
+  const loadData = useCallback(async () => {
+    const points = await getPoints();
+    setScore(points);
+    setDataLoaded(true);
+  }, []);
+
+  const checkAuth = useCallback(async () => {
+    const authStatus = await isUserAuthenticated();
+    setIsAuth(authStatus);
+  }, []);
+
+  useEffect(() => {
+    loadData();
+    checkAuth();
+  }, []);
+
+  if(dataLoaded === false){
+    return null;
   }
+
+
   return (
-    <IonApp>
-      <IonReactRouter>
-        <IonSplitPane contentId="main">
-          <Menu />
-          <IonRouterOutlet id="main">
-            <Route path="/:name" exact={true}>
-              <Page />
-            </Route>
-          </IonRouterOutlet>
-        </IonSplitPane>
-      </IonReactRouter>
-    </IonApp>
+    isAuth ? (
+      <IonApp>
+        <UserContext.Provider value={{ score, setScore }}>
+          <IonReactRouter>
+            <IonSplitPane contentId="main">
+              <Menu />
+              <IonRouterOutlet id="main">
+                <Switch>
+                  <Route path="/:name" exact={true}>
+                    <Page />
+                  </Route>
+                  <Redirect to="/rules" />
+                </Switch>
+              </IonRouterOutlet>
+            </IonSplitPane>
+          </IonReactRouter>
+        </UserContext.Provider>
+      </IonApp>
+    ) : (
+      <SignIn />
+    )
   );
 };
 

@@ -8,7 +8,7 @@ import { PAGE_TO_TITLE } from '../components/constants';
 const Page: React.FC = () => {
 
   const { name } = useParams<{ name: string; }>();
-
+  
   return (
     <IonPage>
       <IonHeader>

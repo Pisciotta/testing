@@ -1,5 +1,5 @@
 import React from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonCard, IonCardContent } from '@ionic/react';
+import { IonCard, IonCardContent } from '@ionic/react';
 
 const CommunityRules: React.FC = () => (
     <>

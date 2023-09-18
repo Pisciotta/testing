@@ -1,9 +1,7 @@
+import { createContext } from "react";
 import { getPoints, updatePoints } from "./foo";
 
-export const USER_ID = async () => {
-    // Load user id from local storage
-    return await localStorage.getItem("userId");
-}
+export const INITIAL_SCORE = 100;
 
 export const SCORE = async (delta = 0) => {
     const points = await getPoints()+delta;
@@ -19,3 +17,6 @@ export const PAGE_TO_TITLE: { [key:string] : string} = {
     "host": "I tuoi prossimi eventi",};
 
 export const ADS = [{"id":1, "text":"Testo annuncio"}];
+
+// Define User Context
+export const UserContext = createContext<any>({});

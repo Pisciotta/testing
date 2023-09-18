@@ -1,7 +1,7 @@
 import { IonButton, IonAlert } from '@ionic/react';
-import React, { useEffect, useState } from 'react';
-import { addUserIdToQueue, convertEventToString, fetchFutureEvents, getUserQueue, removeEventFromUser, updatePoints } from './foo';
-import { SCORE, USER_ID } from './constants';
+import React, { useContext, useEffect, useState } from 'react';
+import { addUserToQueue, convertEventToString, fetchFutureEvents, getUserId, getUserQueue, removeEventFromUser, updatePoints } from './foo';
+import { SCORE, UserContext } from './constants';
 
 interface Ad {
   id: string;
@@ -14,7 +14,10 @@ export const BulletinBoard: React.FC = () => {
   const [adsState, setAdsState] = useState<Ad[]>();
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [showAlert, setShowAlert] = useState(false);
-  const [eventsFetchted, setEventsFetchted] = useState(false);  
+  const [eventsFetchted, setEventsFetchted] = useState(false); 
+  
+  // Get score from user context
+  const { score, setScore } = useContext(UserContext);
 
   const handleParticipateClick = (ad: Ad) => {
     setSelectedAd(ad);
@@ -27,10 +30,12 @@ export const BulletinBoard: React.FC = () => {
         prevAds?.map((ad) => (ad.id === selectedAd.id ? { ...ad, participated: participated } : ad))
       );
 
-      const score = await SCORE(-5);
+      
       if (participated) {
-        await addUserIdToQueue(selectedAd.id);
-        await updatePoints(score);
+        await addUserToQueue(selectedAd.id);
+        console.log("score: ", score-5);
+        await updatePoints(score-5);
+        setScore(score-5);
       } else {
         await removeEventFromUser(selectedAd.id);
       }
@@ -47,7 +52,10 @@ export const BulletinBoard: React.FC = () => {
     const fetchEvents = async () => {
       const currentUserQueue = await getUserQueue();
       const events = await fetchFutureEvents() as any;
-      const userid = await USER_ID();
+
+      console.log(events);
+
+      const userid = await getUserId();
       const eventsFromOtherUsers = events.filter((event:any) => event.event?.userId !== userid);
       const sortedEventsFromOtherUsers = eventsFromOtherUsers.sort((a:any, b:any) => {
         if (a.event.date < b.event.date) {

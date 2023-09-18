@@ -1,7 +1,6 @@
 import React, { useState } from 'react';
 import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonItem, IonLabel, IonInput, IonButton, IonTextarea, IonAlert, IonDatetime, IonNote, IonGrid } from '@ionic/react';
-import { storeUserAd } from './foo';
-import { USER_ID } from './constants';
+import { getUserId, storeUserAd } from './foo';
 import { useHistory } from 'react-router';
 
 const AdForm: React.FC = () => {
@@ -29,7 +28,7 @@ const AdForm: React.FC = () => {
           setValidated(true);
       }
 
-      const uid = await USER_ID();
+      const uid = await getUserId();
       if(uid){
         storeUserAd(
           uid,
