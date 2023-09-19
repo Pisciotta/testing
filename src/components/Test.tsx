@@ -1,29 +1,33 @@
 import React, { useEffect } from 'react';
 import { Question } from './Question';
 import { getUserId, getUserQuestionnaire, storeUserQuestionnaire } from './foo';
-      
+
+export const questions = [
+    {id: "1", text: "Sesso"},
+    {id: "2", text: "Sei dominante?"},
+    {id: "3", text: "Orientamento sessuale?"},
+    {id: "4", text: "Sei un fumatore?"},
+    {id: "5", text: "Ti piace il sesso anale?"},
+    {id: "6", text: "Baceresti una/o sconosciuta/o?"}
+];
+
+export const answers = [
+    {id: "1", choices: ["M", "F", "Altro"]},
+    {id: "2", choices: ["Si", "No", "Dipende", "Altro"]},
+    {id: "3", choices: ["Eterosessuale", "Omosessuale", "Bisessuale", "Altro"]},
+    {id: "4", choices: ["Si", "No", "Altro"]}, 
+    {id: "5", choices: ["Si, farlo", "Si, riceverlo", "No", "Altro"]},
+    {id: "6", choices: ["Si", "No", "Dipende", "Altro"]}
+];
+
 const Test: React.FC = () => {
     
     const [ givenAnswersDict, setGivenAnswersDict ] = React.useState<Record<string, string>>({});
     const [ answersCounter, setAnswersCounter ] = React.useState<number>(0);
 
-    const questions = [
-        {id: "1", text: "Sesso"},
-        {id: "2", text: "Sei dominante?"},
-        {id: "3", text: "Orientamento sessuale?"},
-        {id: "4", text: "Sei un fumatore?"},
-        {id: "5", text: "Ti piace il sesso anale?"},
-        {id: "6", text: "Baceresti una/o sconosciuta/o?"}
-    ];
+    
 
-    const answers = [
-        {id: "1", choices: ["M", "F", "Altro"]},
-        {id: "2", choices: ["Si", "No", "Dipende", "Altro"]},
-        {id: "3", choices: ["Eterosessuale", "Omosessuale", "Bisessuale", "Altro"]},
-        {id: "4", choices: ["Si", "No", "Altro"]}, 
-        {id: "5", choices: ["Si, farlo", "Si, riceverlo", "No", "Altro"]},
-        {id: "6", choices: ["Si", "No", "Dipende", "Altro"]}
-    ];
+    
 
     const FromQuestionTextToId = (questionText: string): string => {
         const question = questions.find(question => question.text === questionText);

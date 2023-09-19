@@ -391,6 +391,36 @@ export async function fetchQueue(eventId: string): Promise<any> {
   }
 }
 
+
+// Extract info from questionnaire
+export function getSexFromQ(queueMemberString:string): string {
+  const ans = getNthDigit(queueMemberString,0);
+  if(ans === 0){
+    return "M";
+  }
+  if(ans === 1){
+    return "F";
+  }
+  return "?";
+}
+
+
+
+export function getNthDigit(input: string, n: number): number {
+  const parts = input.split('-');
+  if (parts.length < 2) {
+      return -1; // return -1 if there is no '-' character
+  }
+
+  const digits = parts[1].split(',').map(Number);
+  if (n >= 0 && n < digits.length) {
+      return digits[n]; // return the n-th digit
+  }
+
+  return -1; // return -1 if n is out of range
+}
+
+
 // Function to store unique code for user
 async function storeUserCode(userId: string, code: string) {
   await setDoc(doc(db, "users", userId), { code }, { merge: true });
