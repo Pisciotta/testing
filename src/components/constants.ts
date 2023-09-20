@@ -2,6 +2,7 @@ import { createContext } from "react";
 import { getPoints, updatePoints } from "./foo";
 
 export const INITIAL_SCORE = 100;
+export const MINUS_SCORE_FOR_PARTICIPATING = 10;
 
 export const SCORE = async (delta = 0) => {
     const points = await getPoints()+delta;

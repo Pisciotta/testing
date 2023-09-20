@@ -200,10 +200,11 @@ export const HostAds: React.FC = () => {
 
 
 
-  if(adsState === undefined || queue.length === 0 || events.length === 0 ){
+  if(adsState === undefined || queue.length === 0 || events.length === 0  ){
     return <></>;
   }
 
+  console.log("queue",queue)
   
 
   return (
@@ -215,7 +216,6 @@ export const HostAds: React.FC = () => {
         if(queue[id].confirmed && queue[id].confirmed.length > 0){
           closed = true;
         }
-        console.log(ad)
 
         return <div key={ad.id}>
           <p>
@@ -229,7 +229,8 @@ export const HostAds: React.FC = () => {
                 onClick={() => handleDeleteClick(ad)}>
                 Elimina
             </IonButton>}
-            { closed === false && getAcceptedIdCountByAdId(ad.id) &&
+            
+            { closed === false && getAcceptedIdCountByAdId(ad.id) ?
             <IonButton
                 onClick={() => {setShowAlertClose(true); setSelectedAd(ad);}}
                 size="small"
@@ -237,9 +238,14 @@ export const HostAds: React.FC = () => {
                 >
                 Accetta e chiudi
             </IonButton>
+            : null
             }
           </p>
+          
+          { closed === true && <i>PARTECIPANTI:</i>}
+          { closed === false && <i>CANDIDATI:</i>}
 
+          <span>{queue[id].userIds.length === 0 ? "Nessuno" : null}</span>
           <span> {queue[id].userIds.map((member:string, idx:number) => {
             return <span key={idx} onClick={() => {
               setSelectedAd(ad);
@@ -247,6 +253,7 @@ export const HostAds: React.FC = () => {
               setShowPopover(true);
 
             }}>{
+              queue[id].confirmed !== undefined &&
               queue[id].confirmed.includes(simpleHash(member))
               ?
               getSexChip(getSexFromQ(member), idx, closed === false ? true : false, true)

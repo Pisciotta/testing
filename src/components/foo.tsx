@@ -384,10 +384,10 @@ export async function fetchQueue(eventId: string): Promise<any> {
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
     const data = docSnap.data();
-    return data ?? [];
+    return data ?? {userIds: []};
   } else {
     console.log("No such document!");
-    return [];
+    return {userIds: []};
   }
 }
 

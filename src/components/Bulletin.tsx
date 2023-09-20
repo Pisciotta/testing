@@ -1,12 +1,13 @@
-import { IonButton, IonAlert } from '@ionic/react';
+import { IonButton, IonAlert, IonBadge } from '@ionic/react';
 import React, { useContext, useEffect, useState } from 'react';
-import { addUserToQueue, convertEventToString, fetchFutureEvents, getUserId, getUserQueue, removeEventFromUser, updatePoints } from './foo';
-import { SCORE, UserContext } from './constants';
+import { addUserToQueue, convertEventToString, fetchFutureEvents, fetchQueue, getQuestionnaireString, getUserId, getUserQueue, removeEventFromUser, simpleHash, updatePoints } from './foo';
+import { MINUS_SCORE_FOR_PARTICIPATING, UserContext } from './constants';
 
 interface Ad {
   id: string;
   text: string;
   participated: boolean;
+  confirmed: boolean;
 }
 
 
@@ -14,17 +15,20 @@ export const BulletinBoard: React.FC = () => {
   const [adsState, setAdsState] = useState<Ad[]>();
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [showAlert, setShowAlert] = useState(false);
-  const [eventsFetchted, setEventsFetchted] = useState(false); 
+  const [eventsFetchted, setEventsFetchted] = useState(false);
+  const [queue, setQueue] = useState<any[]>([]);
   
   // Get score from user context
   const { score, setScore } = useContext(UserContext);
 
+  
   const handleParticipateClick = (ad: Ad) => {
     setSelectedAd(ad);
     setShowAlert(true);
   };
 
   const handleAlertDismiss = async (participated: boolean) => {
+    
     if (selectedAd && adsState !== undefined) {
       setAdsState((prevAds) =>
         prevAds?.map((ad) => (ad.id === selectedAd.id ? { ...ad, participated: participated } : ad))
@@ -33,16 +37,18 @@ export const BulletinBoard: React.FC = () => {
       
       if (participated) {
         await addUserToQueue(selectedAd.id);
-        console.log("score: ", score-5);
-        await updatePoints(score-5);
-        setScore(score-5);
+        await updatePoints(score-MINUS_SCORE_FOR_PARTICIPATING);
+        setScore(score-MINUS_SCORE_FOR_PARTICIPATING);
       } else {
         await removeEventFromUser(selectedAd.id);
       }
     }
+    
     setSelectedAd(null);
     setShowAlert(false);
   };
+
+ 
 
   useEffect(() => {
     if(eventsFetchted){
@@ -66,7 +72,21 @@ export const BulletinBoard: React.FC = () => {
         return 0;
       });
 
-      const eventsToAds = sortedEventsFromOtherUsers.map((event:any, idx:number) => {
+      const eventsToAds = await Promise.all(sortedEventsFromOtherUsers.map(async (event:any, idx:number) => {
+        const participated = currentUserQueue.includes(event.id);
+        const user = {id:await getUserId(), q:await getQuestionnaireString()};
+        const userIdAndQ = user.id+"-"+user.q;
+        
+        let confirmed = false;
+      
+        if(participated){
+          const queue = await fetchQueue(event.id);
+          if(queue.confirmed !== undefined){
+            confirmed = queue.confirmed.includes(simpleHash(userIdAndQ));
+          }
+          
+        }
+      
         return {
           id: event.id,
           text: convertEventToString(
@@ -77,17 +97,34 @@ export const BulletinBoard: React.FC = () => {
             event.event.males,
             event.event.females
           ),
-          participated:  currentUserQueue.includes(event.id) ? true : false
+          participated: participated,
+          confirmed: confirmed
         }
-      });
+      }));
+      
       
       setAdsState(eventsToAds);
       setEventsFetchted(true);
+
+      
     };
     fetchEvents();
 
     
   }, []);
+
+  console.log(adsState)
+
+  if(score-MINUS_SCORE_FOR_PARTICIPATING < 0){
+    // Not enough score for participating at events
+    return (
+      <div>
+        <p>
+          Non hai abbastanza punti per partecipare agli eventi.
+        </p>
+      </div>
+    );
+  }
 
   return (
     <>
@@ -97,12 +134,15 @@ export const BulletinBoard: React.FC = () => {
             {ad.text}
           </p>
           <p>
+            { ad.confirmed === true ? <>
+            <IonButton size="small" color="success" >Confermato</IonButton>
+            </> : 
             <IonButton
                 size="small"
                 color={ad.participated ? 'warning' : 'primary'}
                 onClick={() => handleParticipateClick(ad)}>
                 {ad.participated ? "Non partecipare" : "Partecipa"}
-            </IonButton>
+            </IonButton>}
           </p>
         </div>
       ))}
