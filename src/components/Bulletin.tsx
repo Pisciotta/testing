@@ -53,7 +53,6 @@ export const BulletinBoard: React.FC = () => {
       const currentUserQueue = await getUserQueue();
       const events = await fetchFutureEvents() as any;
 
-      console.log(events);
 
       const userid = await getUserId();
       const eventsFromOtherUsers = events.filter((event:any) => event.event?.userId !== userid);

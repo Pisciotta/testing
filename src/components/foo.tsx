@@ -384,7 +384,7 @@ export async function fetchQueue(eventId: string): Promise<any> {
   const docSnap = await getDoc(docRef);
   if (docSnap.exists()) {
     const data = docSnap.data();
-    return data?.userIds ?? [];
+    return data ?? [];
   } else {
     console.log("No such document!");
     return [];
@@ -418,6 +418,40 @@ export function getNthDigit(input: string, n: number): number {
   }
 
   return -1; // return -1 if n is out of range
+}
+
+export function simpleHash(input: string): number {
+  let hash = 0;
+  for (let i = 0; i < input.length; i++) {
+      const character = input.charCodeAt(i);
+      hash = ((hash << 5) - hash) + character;
+      hash |= 0; // Convert to 32bit integer
+  }
+  return hash;
+}
+
+
+export function mapQueueMemberStringToBinaryQString(queueMemberString: string): string {
+    // Split the input string by '-' and take the second part
+    const numbersString = queueMemberString.split('-')[1];
+  
+    // Split the numbers string by ',' to get an array of numbers as strings
+    const numbersArray = numbersString.split(',');
+  
+    // Filter out the '0's and join the array back into a string
+    const result = numbersArray.join('');
+  
+    return result;
+}
+
+// Function to store in Firebase the queue.{eventId}.confirmed array.
+export async function storeConfirmedQueue(eventId: string, confirmedQueue: string[]): Promise<void> {
+  const docRef = doc(db, "queue", eventId);
+  try {
+    await updateDoc(docRef, { confirmed: confirmedQueue });
+  } catch (error) {
+    console.error("Error updating document: ", error);
+  }
 }
 
 

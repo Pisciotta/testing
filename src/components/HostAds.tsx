@@ -1,23 +1,28 @@
-import { IonButton, IonAlert, IonIcon, IonChip, IonPopover, IonCol, IonRow, IonGrid, IonCardContent, IonCard, IonModal } from '@ionic/react';
+import { IonButton, IonAlert, IonIcon, IonChip, IonCol, IonRow, IonGrid, IonModal } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
-import { convertEventToString, deleteEventById, fetchFutureEvents, fetchQueue, getNthDigit, getSexFromQ, getUserId } from './foo';
-import { chevronForwardCircle, male, man, thumbsDownOutline, thumbsUpOutline, transgender, woman } from 'ionicons/icons';
-import { answers, questions } from './Test';
+import { convertEventToString, deleteEventById, fetchFutureEvents, fetchQueue, getNthDigit, getSexFromQ, getUserId, simpleHash, storeConfirmedQueue } from './foo';
+import { man, thumbsDownOutline, thumbsUpOutline, transgender, woman } from 'ionicons/icons';
+import { NUMBER_OF_QUESTIONS, answers, questions } from './Test';
 import './HostAds.css';
 
 interface Ad {
   id: string;
   text: string;
+  acceptedId: [];
 }
 
 export const HostAds: React.FC = () => {
+  const [events, setEvents] = useState<any[]>([]);
   const [adsState, setAdsState] = useState<Ad[]>();
   const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
   const [showAlert, setShowAlert] = useState(false);
+  const [showAlertClose, setShowAlertClose] = useState(false);
   const [eventsFetchted, setEventsFetchted] = useState(false);
-  const [queue, setQueue] = useState<string[][]>([]);
+  const [queue, setQueue] = useState<any[]>([]);
   const [showPopover, setShowPopover] = useState(false);
   const [clickedQDict, setClickedQDict] = useState<{ad:number, q:number}>({ad:0, q:0});
+
+
 
   const handleDeleteClick = (ad: Ad) => {
     setSelectedAd(ad);
@@ -37,36 +42,65 @@ export const HostAds: React.FC = () => {
   };
   
 
-  const getSexChip = (sex:string, idx:number) => {
+  const getSexChip = (sex:string, idx:number, selected:boolean, greenBorder = false) => {
+    const ok = selected ? <IonIcon icon={thumbsUpOutline} color="success" /> : null;
+    const style = greenBorder ? {borderColor:"green", borderWidth:"2px", borderStyle:"solid"} : {};
+    
     if(sex === "M"){
-      return <IonChip key={idx} color="primary">M<IonIcon icon={man} /></IonChip>;
+      return <IonChip key={idx} color="primary" style={style}>M<IonIcon icon={man} />{ok}</IonChip>;
     }else if(sex === "F"){
-      return <IonChip key={idx} color="danger">F<IonIcon icon={woman} /></IonChip>;
+      return <IonChip key={idx} color="danger" style={style}>F<IonIcon icon={woman} />{ok}</IonChip>;
     }else{
-      return <IonChip key={idx} color="dark">?<IonIcon icon={transgender} /></IonChip>;
+      return <IonChip key={idx} color="dark" style={style}>?<IonIcon icon={transgender} />{ok}</IonChip>;
     }
   }
 
-
-  const roundedGreenLikeBlockButtonWithIcon = () => {
+  const roundedGreenLikeBlockButtonWithIcon = (queueMemberString:string) => {
+    
     return (
       <IonButton
         size="large"
         color="success"
         shape="round"
-        onClick={() => setShowPopover(false)}>
+        onClick={() => {
+          setShowPopover(false);
+          // ADd the acceptedId and acceptedQ of the ad in adsState
+          setAdsState((prevAds:any) => {
+            return prevAds?.map((ad:Ad) => {
+              if(ad.id === selectedAd!.id){
+                const acceptedId = Array.from(new Set([...ad.acceptedId, simpleHash(queueMemberString)]));
+                return { ...ad, acceptedId: acceptedId };
+              }else{
+                return ad;
+              }
+            });
+          });
+        }}>
         <IonIcon size="large" icon={thumbsUpOutline} />
       </IonButton>
     );
   }
 
-  const roundedRedDislikeBlockButtonWithIcon = () => {
+  const roundedRedDislikeBlockButtonWithIcon = (queueMemberString:string) => {
     return (
       <IonButton
         size="large"
         color="danger"
         shape="round"
-        onClick={() => setShowPopover(false)}>
+        onClick={() => {
+          setShowPopover(false);
+          // Remove the acceptedId and acceptedQ of the ad in adsState
+          setAdsState((prevAds:any) => {
+            return prevAds?.map((ad:Ad) => {
+              if(ad.id === selectedAd!.id){
+                const acceptedId = ad.acceptedId.filter((id:number) => id !== simpleHash(queueMemberString));
+                return { ...ad, acceptedId: acceptedId };
+              }else{
+                return ad;
+              }
+            });
+          });
+        }}>
         <IonIcon size="large" icon={thumbsDownOutline} />
       </IonButton>
     );
@@ -74,39 +108,52 @@ export const HostAds: React.FC = () => {
 
   const showInfoFromQ = (queueMemberString:string) => {
     const q = [];
-    for(let i=0; i<6; i++) {
+    for(let i=0; i<NUMBER_OF_QUESTIONS; i++) {
       q[i] = getNthDigit(queueMemberString,i);
     }
-  
+    
     // Return a Grid with the answers
     return (
-      <IonGrid>        
+      <IonGrid >
+             
           {q.map((item, index) => (
-            <IonRow key={index}>
+            <IonRow key={index} style={{padding:"10px"}}>
               <IonCol  >
                   <strong >{questions[index].text}</strong> 
               </IonCol>
               <IonCol  >
-                <p><i>{answers[index].choices[item]}</i></p>
+                  <i>{answers[index].choices[item]}</i>
               </IonCol>
             </IonRow>
           ))}
-          <IonRow>
+          { queue[clickedQDict.ad].confirmed === undefined &&
+          <IonRow style={{padding:"10px"}}>
           <IonCol>
-            {roundedGreenLikeBlockButtonWithIcon()}
+            {roundedGreenLikeBlockButtonWithIcon(queueMemberString)}
             
           </IonCol>
           <IonCol>
-          {roundedRedDislikeBlockButtonWithIcon()}
+          {roundedRedDislikeBlockButtonWithIcon(queueMemberString)}
           </IonCol>
           </IonRow>
+          
+          }
+          { queue[clickedQDict.ad].confirmed !== undefined &&
+          <IonRow style={{padding:"10px"}}>
+            <IonCol>
+              <IonButton color="light" size="large" onClick={() => setShowPopover(false)}>Chiudi</IonButton>
+            </IonCol>
+          </IonRow>} 
       </IonGrid>
       
     );
   }
-  
 
-  
+  const getAcceptedIdCountByAdId = (adId:string) => {
+    const ad = adsState?.find((ad:Ad) => ad.id === adId);
+    return ad?.acceptedId.length;
+  }  
+
 
   useEffect(() => {
     if(eventsFetchted){
@@ -117,7 +164,7 @@ export const HostAds: React.FC = () => {
       if(!uid){
         return;
       }
-      const events = (await fetchFutureEvents(uid)).sort((a:any, b:any) => {
+      const eventsTmp = (await fetchFutureEvents(uid)).sort((a:any, b:any) => {
         if (a.event.date < b.event.date) {
           return -1;
         }
@@ -127,9 +174,7 @@ export const HostAds: React.FC = () => {
         return 0;
       });
 
-      
-
-      setAdsState(events.map((event:any, idx:number) => {
+      setAdsState(eventsTmp.map((event:any, idx:number) => {
         return {
           id: event.id,
           text: convertEventToString(
@@ -139,70 +184,130 @@ export const HostAds: React.FC = () => {
             event.event.adDescription,
             event.event.males,
             event.event.females
-          )
+          ),
+          acceptedId: []
         }
       }));
 
-      setQueue(await Promise.all(events.map((event:any) => fetchQueue(event.id))));
+      setQueue(await Promise.all(eventsTmp.map((event:any) => fetchQueue(event.id))));
 
       setEventsFetchted(true);
+
+      setEvents(eventsTmp);
     };
     fetchEvents();
   }, []);
 
-  if(adsState === undefined || queue.length === 0 ){
+
+
+  if(adsState === undefined || queue.length === 0 || events.length === 0 ){
     return <></>;
   }
 
+  
+
   return (
     <>
-      {adsState?.map((ad,id) => (
-        <div key={ad.id}>
+      {adsState?.map((ad,id) => {
+        let closed = false;
+        
+        // Check if queue[id].confirmed exists and is not empty list
+        if(queue[id].confirmed && queue[id].confirmed.length > 0){
+          closed = true;
+        }
+        console.log(ad)
+
+        return <div key={ad.id}>
           <p>
             {ad.text}
           </p>
           <p>
+            { closed === false &&
             <IonButton
                 size="small"
                 color="danger"
                 onClick={() => handleDeleteClick(ad)}>
                 Elimina
+            </IonButton>}
+            { closed === false && getAcceptedIdCountByAdId(ad.id) &&
+            <IonButton
+                onClick={() => {setShowAlertClose(true); setSelectedAd(ad);}}
+                size="small"
+                color="warning"
+                >
+                Accetta e chiudi
             </IonButton>
+            }
           </p>
-          <span> {queue[id].map((member, idx) => {
+
+          <span> {queue[id].userIds.map((member:string, idx:number) => {
             return <span key={idx} onClick={() => {
-              setClickedQDict({ad:id,q:idx}); setShowPopover(true);
+              setSelectedAd(ad);
+              setClickedQDict({ad:id,q:idx});
+              setShowPopover(true);
+
             }}>{
-              getSexChip(getSexFromQ(member), idx)}
+              queue[id].confirmed.includes(simpleHash(member))
+              ?
+              getSexChip(getSexFromQ(member), idx, closed === false ? true : false, true)
+              :
+              closed === false ? getSexChip(getSexFromQ(member), idx, false) : null
+
+              
+              }
+
               </span>
+              
+          
           })}</span>
         </div>
-      ))}
+      })}
  
       
       <IonAlert
         isOpen={showAlert}
         onDidDismiss={() => handleAlertDismiss(false)}
-        header={'Conferma'}
-        message={'Confermi di voler eliminare questo evento? I partecipanti verranno avvisati.'}
+        header={'ELIMINA'}
+        message={'Confermi di voler eliminare questo evento?'}
         buttons={[
           {
             text: 'Annulla',
             role: 'cancel',
           },
           {
-            text: 'OK',
+            text: 'SI',
             handler: () => handleAlertDismiss(true),
           },
         ]}
       />
 
-    <IonModal
+      <IonAlert
+        isOpen={showAlertClose}
+        onDidDismiss={() => setShowAlertClose(false)}
+        header={'CHIUDI'}
+        message={'Confermi di accettare i partecipanti selezionati e chiudere ad ulteriori candidature?'}
+        buttons={[
+          {
+            text: 'Annulla',
+            role: 'cancel',
+          },
+          {
+            text: 'SI, CONFERMO',
+            handler: () => {storeConfirmedQueue(selectedAd!.id, selectedAd!.acceptedId)},
+          },
+        ]}
+      />
+
+    <IonModal 
       isOpen={showPopover}
       onDidDismiss={() => setShowPopover(false)}
     >
-      <p className="ion-text-center">{showInfoFromQ(queue[clickedQDict.ad][clickedQDict.q])}</p>
+      <div className="ion-text-center" style={{display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%'}}>
+        {showPopover ? 
+        showInfoFromQ(queue[clickedQDict.ad].userIds[clickedQDict.q])
+        : ""}
+      </div>
     </IonModal>
     </>
   );
-};
+}; 

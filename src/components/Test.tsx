@@ -20,6 +20,9 @@ export const answers = [
     {id: "6", choices: ["Si", "No", "Dipende", "Altro"]}
 ];
 
+
+export const NUMBER_OF_QUESTIONS = questions.length;
+
 const Test: React.FC = () => {
     
     const [ givenAnswersDict, setGivenAnswersDict ] = React.useState<Record<string, string>>({});
