@@ -1,6 +1,7 @@
-import React, { useEffect } from 'react';
+import React, { useContext, useEffect } from 'react';
 import { Question } from './Question';
 import { getUserId, getUserQuestionnaire, storeUserQuestionnaire } from './foo';
+import { UserContext } from './constants';
 
 export const questions = [
     {id: "1", text: "Sesso"},
@@ -27,9 +28,7 @@ const Test: React.FC = () => {
     
     const [ givenAnswersDict, setGivenAnswersDict ] = React.useState<Record<string, string>>({});
     const [ answersCounter, setAnswersCounter ] = React.useState<number>(0);
-
-    
-
+    const { checkQ, setCheckQ } = useContext(UserContext);
     
 
     const FromQuestionTextToId = (questionText: string): string => {
@@ -56,6 +55,17 @@ const Test: React.FC = () => {
         });
     }
 
+    // Check if a questionnaire exists locally. If so, return the number of values, otherwise return 0
+    const questionnaireExistsLocallyAndReturnValues = async (): Promise<number> => {
+        const uid = await getUserId();
+        if(!uid){
+            return 0;
+        }
+        const dict = await getUserQuestionnaire(uid);
+        return Object.values(dict).length;
+    }
+
+
     useEffect(() => {
         // Load givenAnswersDict from getUserQuestionnaire
         const loadGivenAnswersDict = async () => {
@@ -78,6 +88,7 @@ const Test: React.FC = () => {
     
             if (counter === questions.length) {
                 await storeUserQuestionnaire(await getUserId(), givenAnswersDict);
+                setCheckQ(true);
             }
         };
     

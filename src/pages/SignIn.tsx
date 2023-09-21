@@ -4,6 +4,7 @@ import 'firebase/auth';
 import { addLoginUser, firebaseConfig, isUserAuthenticated, storeUserId } from '../components/foo';
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
+import { useHistory } from 'react-router';
 
 
 if (!firebase.apps.length) {
@@ -14,12 +15,16 @@ if (!firebase.apps.length) {
 
 const SignIn: React.FC = () => {
   const [isAuth, setIsAuth] = useState(false);
+  const history = useHistory();
 
   useEffect(() => {
+    
     const checkAuth = async () => {
       const authStatus = await isUserAuthenticated();
       setIsAuth(authStatus);
-      
+      if(authStatus){
+        window.location.href="/test";
+      }
     }
     checkAuth();
   }, []);
@@ -33,6 +38,8 @@ const SignIn: React.FC = () => {
         await addLoginUser(result.user.uid, result.user.email, result.user.displayName, result.user.photoURL);
         await storeUserId(result.user.uid);
         setIsAuth(true);
+        window.location.href="/test";
+
       }
     } catch (error) {
       console.error(error);

@@ -1,4 +1,4 @@
-import { IonButton, IonAlert, IonBadge } from '@ionic/react';
+import { IonButton, IonAlert, IonBadge, IonCard, IonCardContent, IonCardSubtitle, IonCardTitle } from '@ionic/react';
 import React, { useContext, useEffect, useState } from 'react';
 import { addUserToQueue, convertEventToString, fetchFutureEvents, fetchQueue, getQuestionnaireString, getUserId, getUserQueue, removeEventFromUser, simpleHash, updatePoints } from './foo';
 import { MINUS_SCORE_FOR_PARTICIPATING, UserContext } from './constants';
@@ -129,11 +129,8 @@ export const BulletinBoard: React.FC = () => {
   return (
     <>
       {adsState?.map((ad) => (
-        <div key={ad.id}>
-          <p>
-            {ad.text}
-          </p>
-          <p>
+        <IonCard key={ad.id}>
+          <IonCardTitle>
             { ad.confirmed === true ? <>
             <IonButton size="small" color="success" >Confermato</IonButton>
             </> : 
@@ -143,8 +140,12 @@ export const BulletinBoard: React.FC = () => {
                 onClick={() => handleParticipateClick(ad)}>
                 {ad.participated ? "Non partecipare" : "Partecipa"}
             </IonButton>}
-          </p>
-        </div>
+          </IonCardTitle>
+          <IonCardContent>
+            {ad.text}
+          </IonCardContent>
+          
+        </IonCard>
       ))}
  
       

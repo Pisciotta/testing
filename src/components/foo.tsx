@@ -2,7 +2,7 @@
 import { initializeApp } from "firebase/app";
 import { getFirestore, collection, addDoc, doc, setDoc, getDoc, query, where, getDocs, updateDoc, arrayUnion, orderBy, startAfter, deleteDoc, arrayRemove } from "firebase/firestore";
 import { Storage } from '@ionic/storage';
-import { INITIAL_SCORE } from "./constants";
+import { INITIAL_SCORE, MINUS_SCORE_FOR_PARTICIPATING } from "./constants";
 import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
@@ -179,11 +179,13 @@ export async function getQuestionnaireString(): Promise<string[]> {
   return Object.values(localQuestionnaire);
 }
 
+
+
 // Add the userId to the list associated to the eventId. List elements must be unique.
 export async function addUserToQueue(eventId: string): Promise<void> {
   const eventDocRef = doc(db, "queue", eventId);
   const user = {id:await getUserId(), q:await getQuestionnaireString()};
-  const userIdAndSex = user.id+"-"+user.q;
+  const userIdAndQ = user.id+"-"+user.q;
 
   if (!user) {
     console.error("User id not found");
@@ -194,9 +196,9 @@ export async function addUserToQueue(eventId: string): Promise<void> {
     const docSnap = await getDoc(eventDocRef);
 
     if (docSnap.exists()) {
-      await updateDoc(eventDocRef, { userIds: arrayUnion(userIdAndSex) });
+      await updateDoc(eventDocRef, { userIds: arrayUnion(userIdAndQ) });
     } else {
-      await setDoc(eventDocRef, { userIds: [userIdAndSex] });
+      await setDoc(eventDocRef, { userIds: [userIdAndQ] });
     }
 
     await addEventToUserQueue(eventId, user.id);
@@ -288,8 +290,9 @@ export async function updatePoints(points: number): Promise<void> {
 export async function getPoints(): Promise<number> {
   try {
     const userId = await getUserId();
+
     if(!userId){
-      console.error("User id not found");
+      //console.error("User id not found");
       return INITIAL_SCORE;
     }
     const docRef = doc(db, "users", userId);
@@ -329,13 +332,13 @@ export async function isUserAuthenticated(): Promise<boolean> {
   // Check local isAuthenticated variable
   await store.create();
   const localIsAuthenticated = await store.get('isAuthenticated');
+  const localUserId = await store.get('userId');
   
-  if (localIsAuthenticated === true) {
+  if (localIsAuthenticated === true && localUserId !== null && localUserId !== undefined) {
     return true;
   }else{
     // Check if user is logged in on Firebase
     const userId = await getUserId();
-    console.log("userId", userId);
     if (!userId) {
       //console.error("User id not found");
       return false;
@@ -391,7 +394,6 @@ export async function fetchQueue(eventId: string): Promise<any> {
   }
 }
 
-
 // Extract info from questionnaire
 export function getSexFromQ(queueMemberString:string): string {
   const ans = getNthDigit(queueMemberString,0);
@@ -403,7 +405,6 @@ export function getSexFromQ(queueMemberString:string): string {
   }
   return "?";
 }
-
 
 
 export function getNthDigit(input: string, n: number): number {
@@ -445,8 +446,11 @@ export function mapQueueMemberStringToBinaryQString(queueMemberString: string): 
 }
 
 // Function to store in Firebase the queue.{eventId}.confirmed array.
-export async function storeConfirmedQueue(eventId: string, confirmedQueue: string[]): Promise<void> {
+export async function storeConfirmedQueue(eventId: string, confirmedQueue: number[]): Promise<void> {
   const docRef = doc(db, "queue", eventId);
+  if(confirmedQueue.length > 1){
+    updatePoints(await getPoints()+MINUS_SCORE_FOR_PARTICIPATING);
+  }
   try {
     await updateDoc(docRef, { confirmed: confirmedQueue });
   } catch (error) {
@@ -454,6 +458,12 @@ export async function storeConfirmedQueue(eventId: string, confirmedQueue: strin
   }
 }
 
+// Check if local questionnarie exists
+export async function questionnaireExistsLocally(): Promise<boolean> {
+  await store.create();
+  const localQuestionnaire = await store.get('questionnaire');
+  return localQuestionnaire !== null && localQuestionnaire !== undefined;
+}
 
 // Function to store unique code for user
 async function storeUserCode(userId: string, code: string) {

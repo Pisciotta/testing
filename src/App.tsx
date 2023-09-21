@@ -26,6 +26,7 @@ import './theme/variables.css';
 import SignIn from './pages/SignIn';
 import { getPoints, isUserAuthenticated } from './components/foo';
 import { INITIAL_SCORE, UserContext } from './components/constants';
+import Calculator from './components/Calculator';
 
 setupIonicReact();
 
@@ -33,6 +34,8 @@ const App: React.FC = () => {
   const [isAuth, setIsAuth] = useState(false);
   const [score, setScore] = useState(INITIAL_SCORE);
   const [dataLoaded, setDataLoaded] = useState(false);
+  const [checkQ, setCheckQ] = useState(false);
+  const [secret, setSecret] = useState(false);
 
   const loadData = useCallback(async () => {
     const points = await getPoints();
@@ -54,11 +57,19 @@ const App: React.FC = () => {
     return null;
   }
 
+  if(secret !== true){
+    return (
+      <UserContext.Provider value={{ setSecret }}>
+        <Calculator />
+      </UserContext.Provider>
+    )
+  }
+
 
   return (
     isAuth ? (
       <IonApp>
-        <UserContext.Provider value={{ score, setScore }}>
+        <UserContext.Provider value={{ score, setScore, checkQ, setCheckQ }}>
           <IonReactRouter>
             <IonSplitPane contentId="main">
               <Menu />

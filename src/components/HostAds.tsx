@@ -1,27 +1,26 @@
-import { IonButton, IonAlert, IonIcon, IonChip, IonCol, IonRow, IonGrid, IonModal } from '@ionic/react';
+import { IonButton, IonAlert, IonIcon, IonChip, IonCol, IonRow, IonGrid, IonModal, IonCard, IonCardContent, IonCardSubtitle, IonCardTitle } from '@ionic/react';
 import React, { useEffect, useState } from 'react';
 import { convertEventToString, deleteEventById, fetchFutureEvents, fetchQueue, getNthDigit, getSexFromQ, getUserId, simpleHash, storeConfirmedQueue } from './foo';
-import { man, thumbsDownOutline, thumbsUpOutline, transgender, woman } from 'ionicons/icons';
+import { man, thumbsDownOutline, thumbsUpOutline, woman } from 'ionicons/icons';
 import { NUMBER_OF_QUESTIONS, answers, questions } from './Test';
 import './HostAds.css';
 
 interface Ad {
   id: string;
   text: string;
-  acceptedId: [];
+  acceptedId: number[];
 }
 
 export const HostAds: React.FC = () => {
   const [events, setEvents] = useState<any[]>([]);
   const [adsState, setAdsState] = useState<Ad[]>();
-  const [selectedAd, setSelectedAd] = useState<Ad | null>(null);
+  const [selectedAd, setSelectedAd] = useState<Ad>();
   const [showAlert, setShowAlert] = useState(false);
   const [showAlertClose, setShowAlertClose] = useState(false);
   const [eventsFetchted, setEventsFetchted] = useState(false);
   const [queue, setQueue] = useState<any[]>([]);
   const [showPopover, setShowPopover] = useState(false);
   const [clickedQDict, setClickedQDict] = useState<{ad:number, q:number}>({ad:0, q:0});
-
 
 
   const handleDeleteClick = (ad: Ad) => {
@@ -51,12 +50,13 @@ export const HostAds: React.FC = () => {
     }else if(sex === "F"){
       return <IonChip key={idx} color="danger" style={style}>F<IonIcon icon={woman} />{ok}</IonChip>;
     }else{
-      return <IonChip key={idx} color="dark" style={style}>?<IonIcon icon={transgender} />{ok}</IonChip>;
+      return <IonChip key={idx} color="dark" style={style}>?{ok}</IonChip>;
     }
   }
 
   const roundedGreenLikeBlockButtonWithIcon = (queueMemberString:string) => {
-    
+
+    //console.log(selectedAd, queueMemberString, simpleHash(queueMemberString));
     return (
       <IonButton
         size="large"
@@ -204,25 +204,21 @@ export const HostAds: React.FC = () => {
     return <></>;
   }
 
-  console.log("queue",queue)
   
 
   return (
     <>
       {adsState?.map((ad,id) => {
         let closed = false;
-        
+
         // Check if queue[id].confirmed exists and is not empty list
         if(queue[id].confirmed && queue[id].confirmed.length > 0){
           closed = true;
         }
-
-        return <div key={ad.id}>
-          <p>
-            {ad.text}
-          </p>
-          <p>
-            { closed === false &&
+        
+        return <IonCard key={ad.id}>
+          <IonCardContent>
+          { closed === false &&
             <IonButton
                 size="small"
                 color="danger"
@@ -240,13 +236,19 @@ export const HostAds: React.FC = () => {
             </IonButton>
             : null
             }
-          </p>
+            <div>
+            {ad.text}
+            </div>
+            
           
+          <div>
           { closed === true && <i>PARTECIPANTI:</i>}
           { closed === false && <i>CANDIDATI:</i>}
 
           <span>{queue[id].userIds.length === 0 ? "Nessuno" : null}</span>
           <span> {queue[id].userIds.map((member:string, idx:number) => {
+            const selected = ad.acceptedId.includes(simpleHash(member)) || false;
+
             return <span key={idx} onClick={() => {
               setSelectedAd(ad);
               setClickedQDict({ad:id,q:idx});
@@ -256,9 +258,10 @@ export const HostAds: React.FC = () => {
               queue[id].confirmed !== undefined &&
               queue[id].confirmed.includes(simpleHash(member))
               ?
-              getSexChip(getSexFromQ(member), idx, closed === false ? true : false, true)
+              getSexChip(getSexFromQ(member), idx, closed === false, true)
               :
-              closed === false ? getSexChip(getSexFromQ(member), idx, false) : null
+              closed === false ? getSexChip(getSexFromQ(member), idx, selected) : 
+              getSexChip(getSexFromQ(member), idx, selected) 
 
               
               }
@@ -267,7 +270,11 @@ export const HostAds: React.FC = () => {
               
           
           })}</span>
-        </div>
+          
+          
+          </div>
+          </IonCardContent>
+        </IonCard>
       })}
  
       
@@ -300,7 +307,10 @@ export const HostAds: React.FC = () => {
           },
           {
             text: 'SI, CONFERMO',
-            handler: () => {storeConfirmedQueue(selectedAd!.id, selectedAd!.acceptedId)},
+            handler: async () => {
+              await storeConfirmedQueue(selectedAd!.id, selectedAd!.acceptedId);
+              window.location.reload();
+            },
           },
         ]}
       />

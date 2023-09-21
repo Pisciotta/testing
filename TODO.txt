@@ -1,9 +1,2 @@
 Aggiungere caching system dove possibile.
-Points system.
-Invitation Link.
-
-
-How to avoid peoploe artificially using their own link?
-
-
 Prima di qualunque altra cosa, compilare il questionario.

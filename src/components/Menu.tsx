@@ -1,5 +1,6 @@
-import React, { useContext } from 'react';
+import React, { useContext, useEffect } from 'react';
 import {
+  IonChip,
   IonContent,
   IonIcon,
   IonItem,
@@ -8,13 +9,14 @@ import {
   IonListHeader,
   IonMenu,
   IonMenuToggle,
-  IonNote,
 } from '@ionic/react';
 
 import { useLocation } from 'react-router-dom';
-import { exit, heartCircle, help, helpBuoy, helpCircle, listCircle, newspaper, paperPlaneOutline, paperPlaneSharp, pencil, people, peopleOutline, person, textSharp, warningOutline, warningSharp } from 'ionicons/icons';
+import { exit, pencil, people, peopleOutline, person, warningOutline, warningSharp } from 'ionicons/icons';
 import './Menu.css';
-import {  SCORE, UserContext } from './constants';
+import {  UserContext } from './constants';
+import Score from './Score';
+import { questionnaireExistsLocally } from './foo';
 
 interface AppPage {
   url: string;
@@ -37,10 +39,10 @@ const appPages: AppPage[] = [
     mdIcon:  person
   },
   {
-    title: 'Chiedi',
-    url: '/faq',
-    iosIcon: helpCircle,
-    mdIcon: helpCircle
+    title: 'Pubblica',
+    url: '/publish',
+    iosIcon: pencil,
+    mdIcon: pencil
   },
   {
     title: 'Incontra',
@@ -48,24 +50,7 @@ const appPages: AppPage[] = [
     iosIcon: people,
     mdIcon: peopleOutline
   },
-  {
-    title: 'Pubblica',
-    url: '/publish',
-    iosIcon: pencil,
-    mdIcon: pencil
-  },
-  {
-    title: 'I tuoi eventi',
-    url: '/host',
-    iosIcon: listCircle,
-    mdIcon: listCircle
-  },
-  {
-    title: 'Invita',
-    url: '/invite',
-    iosIcon: paperPlaneOutline,
-    mdIcon: paperPlaneSharp
-  },
+  
   {
     title: 'Esci',
     url: '/logout',
@@ -76,26 +61,39 @@ const appPages: AppPage[] = [
 
 
 const Menu: React.FC = () => {
-  const { score } = useContext(UserContext);
+  const { score, checkQ, setCheckQ } = useContext(UserContext);
+
+
+
+  useEffect(() => {
+    const checkQuestionnaire = async () => {
+      const check = await questionnaireExistsLocally();
+      setCheckQ(check);
+    }
+
+    checkQuestionnaire();
+  }, [checkQ]);
+
   
 
   const location = useLocation();
-
+ 
   return (
     <IonMenu contentId="main" type="overlay">
       <IonContent>
         <IonList id="inbox-list" lines="none">
-          <IonListHeader>Punteggio</IonListHeader>
-          <IonNote>{score}</IonNote>
+          {Score(score)}
           {appPages.map((appPage, index) => {
-            return (
-              <IonMenuToggle key={index} autoHide={false}>
-                <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
-                  <IonIcon aria-hidden="true" slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
-                  <IonLabel>{appPage.title}</IonLabel>
-                </IonItem>
-              </IonMenuToggle>
-            );
+            if(checkQ === true || appPage.title === "Questionario"){
+              return (
+                <IonMenuToggle key={index} autoHide={false}>
+                  <IonItem className={location.pathname === appPage.url ? 'selected' : ''} routerLink={appPage.url} routerDirection="none" lines="none" detail={false}>
+                    <IonIcon aria-hidden="true" slot="start" ios={appPage.iosIcon} md={appPage.mdIcon} />
+                    <IonLabel>{appPage.title}</IonLabel>
+                  </IonItem>
+                </IonMenuToggle>
+              );
+            }
           })}
         </IonList>
       </IonContent>

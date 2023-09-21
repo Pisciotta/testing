@@ -14,7 +14,11 @@ interface ContainerProps {
   name: string;
 }
 
-const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {  
+const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
+
+
+
+
   useEffect(() => {
   if(name === "logout"){
     // Logout user
@@ -29,14 +33,24 @@ const ExploreContainer: React.FC<ContainerProps> = ({ name }) => {
   }, [name]);
 
 
+
+
   return (
     <div className="container">
     { name === "test" ? <Test /> : null}
-    { name === "meet" ? <BulletinBoard /> : null}
+    { name === "meet" ? <>
+    <h2 style={{textAlign:"center"}}>Prossimi eventi creati da te</h2>
+    <HostAds />
+    <h2 style={{textAlign:"center"}}>Prossimi eventi della Community</h2>
+    <BulletinBoard /></> : null}
     { name === "publish" ? <AdForm /> : null }
-    { name === "rules" ? <CommunityRules /> : null}
-    { name === "faq" ? <><FAQPage /><FeedbackForm /></>: null}
-    { name === "host" ? <HostAds /> : null}
+    { name === "rules" ? <>
+    <CommunityRules />
+    <h2 style={{textAlign:"center"}}>F.A.Q.</h2>
+    <FAQPage />
+    <h2 style={{textAlign:"center"}}>Chiedi</h2>
+    <FeedbackForm /></> : null}
+
       
     </div>
   );

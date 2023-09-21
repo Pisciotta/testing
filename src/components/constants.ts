@@ -10,8 +10,7 @@ export const SCORE = async (delta = 0) => {
     return points;
 };
 export const PAGE_TO_TITLE: { [key:string] : string} = {
-    "faq":"Chiedi",
-    "meet":"Partecipa",
+    "meet":"Incontra",
     "test": "Questionario",
     "publish": "Ospita",
     "rules": "Regole",
