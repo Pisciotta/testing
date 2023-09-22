@@ -41,7 +41,7 @@ const Calculator: React.FC = () => {
 
   // Calculator style must be smaller, page centered and elegant
   const calcStyle = {
-    width: "400px",
+    width: "100%",
     margin: "0 auto",
     border: "1px solid #ccc",
     borderRadius: "5px",
