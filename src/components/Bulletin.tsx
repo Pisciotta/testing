@@ -8,6 +8,8 @@ interface Ad {
   text: string;
   participated: boolean;
   confirmed: boolean;
+  place2?: string;
+  code?: string;
 }
 
 
@@ -96,9 +98,13 @@ export const BulletinBoard: React.FC = () => {
             event.event.adDescription,
             event.event.males,
             event.event.females
+            
+            
           ),
           participated: participated,
-          confirmed: confirmed
+          confirmed: confirmed,
+          place2: confirmed ? event.event.place2 : undefined,
+          code: confirmed ? event.event.code : undefined
         }
       }));
       
@@ -113,7 +119,9 @@ export const BulletinBoard: React.FC = () => {
     
   }, []);
 
-  console.log(adsState)
+
+
+
 
   if(score-MINUS_SCORE_FOR_PARTICIPATING < 0){
     // Not enough score for participating at events
@@ -129,10 +137,11 @@ export const BulletinBoard: React.FC = () => {
   return (
     <>
       {adsState?.map((ad) => (
-        <IonCard key={ad.id}>
+        <IonCard key={ad.id} onClick={() => {ad.confirmed === true ? alert("Luogo esatto:\n"+ad.place2+"\n\nParola in codice:\n"+ad.code): null}}>
           <IonCardTitle>
             { ad.confirmed === true ? <>
-            <IonButton size="small" color="success" >Confermato</IonButton>
+            <IonButton size="small" color="success">Confermato</IonButton>
+            
             </> : 
             <IonButton
                 size="small"
