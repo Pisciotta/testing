@@ -217,7 +217,9 @@ export const HostAds: React.FC = () => {
         }
         
         return <IonCard key={ad.id}>
-          <IonCardContent>
+          
+            <IonCardTitle>
+
           { closed === false &&
             <IonButton
                 size="small"
@@ -236,6 +238,8 @@ export const HostAds: React.FC = () => {
             </IonButton>
             : null
             }
+            </IonCardTitle>
+            <IonCardContent>
             <div>
             {ad.text}
             </div>

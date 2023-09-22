@@ -15,14 +15,13 @@ if (!firebase.apps.length) {
 
 const SignIn: React.FC = () => {
   const [isAuth, setIsAuth] = useState(false);
-  const history = useHistory();
 
   useEffect(() => {
     
     const checkAuth = async () => {
       const authStatus = await isUserAuthenticated();
-      setIsAuth(authStatus);
-      if(authStatus){
+      setIsAuth(authStatus.isAuthenticated && authStatus.whitelisted);
+      if(authStatus.isAuthenticated && authStatus.whitelisted){
         window.location.href="/test";
       }
     }
@@ -50,15 +49,13 @@ const SignIn: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
-          <IonTitle>Accedi</IonTitle>
+          <IonTitle className="ion-text-center">Accedi</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent className="ion-padding">
-        <IonButton expand="full" onClick={signInWithGoogle}>Accedi con Google</IonButton>
+        <IonButton expand="block" size="large" color="dark" onClick={signInWithGoogle}>Accedi con Google</IonButton>
       </IonContent>
-      <IonNote className='ion-text-center'>
-        Nessuna email, notifica o messaggio di conferma verrà mandato da questa applicazione.
-      </IonNote>
+      
     </IonPage>
   );
 };

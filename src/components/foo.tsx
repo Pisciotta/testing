@@ -7,6 +7,7 @@ import firebase from 'firebase/compat/app';
 import 'firebase/compat/auth';
 
 
+
 // Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCUwitN0gp5ovEEc8O7Nawk6YOP-5q3LHI",
@@ -22,6 +23,8 @@ const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 const store = new Storage();
+
+
 
 // Function to store user questionnaire data
 export async function storeUserQuestionnaire(userId: string | null, questionnaire: any) {
@@ -327,31 +330,55 @@ export async function addLoginUser(
   }
 }
 
+function CCS(input: string): number {
+  let CS = 0;
+  for (let i = 0; i < input.length; i++) {
+      CS += input.charCodeAt(i);
+  }
+  return CS;
+}
+
+function CCS2(input: string): number {
+  return CCS(CCS(input).toString());
+}
+
+
 // Check if user is authenticated
-export async function isUserAuthenticated(): Promise<boolean> {
+export async function isUserAuthenticated(): Promise<{isAuthenticated: boolean, whitelisted: boolean}> {
+
+  
   // Check local isAuthenticated variable
   await store.create();
-  const localIsAuthenticated = await store.get('isAuthenticated');
-  const localUserId = await store.get('userId');
+  const localIsAuthenticated = await store.get('isAuthenticated') ?? 0;
+  const localUserId = await store.get('userId') ?? "";
   
-  if (localIsAuthenticated === true && localUserId !== null && localUserId !== undefined) {
-    return true;
+  if (localIsAuthenticated === CCS(localUserId+"512")*CCS2(localUserId+localUserId+"6") && localUserId !== null && localUserId !== undefined) {
+
+    return {isAuthenticated: true, whitelisted: true};
   }else{
     // Check if user is logged in on Firebase
     const userId = await getUserId();
     if (!userId) {
       //console.error("User id not found");
-      return false;
+      return {isAuthenticated: false, whitelisted: false};
     }
     const docRef = doc(db, "logins", userId);
     const docSnap = await getDoc(docRef);
     const isAuthenticated = docSnap.exists();
+
+    // Get the email from the user
+    
+
+    const whitelisted = await doesDocumentExist(docSnap.data()?.email, "whitelisted");
+
+
+
     // Store isAuthenticated locally
-    await store.set('isAuthenticated', isAuthenticated);
+    await store.set('isAuthenticated', CCS(localUserId)*CCS2(localUserId+localUserId));
     // Store userId locally
     await store.set('userId', userId);
 
-    return isAuthenticated;
+    return {isAuthenticated, whitelisted};
   }
 }
 
@@ -465,23 +492,14 @@ export async function questionnaireExistsLocally(): Promise<boolean> {
   return localQuestionnaire !== null && localQuestionnaire !== undefined;
 }
 
-// Function to store unique code for user
-async function storeUserCode(userId: string, code: string) {
-  await setDoc(doc(db, "users", userId), { code }, { merge: true });
+export async function doesDocumentExist(docId: string, collectionName: string): Promise<boolean> {
+  try {
+      const docRef = doc(db, collectionName, docId);
+      const docSnap = await getDoc(docRef);
+      return docSnap.exists();
+  } catch (error) {
+      console.error('Error checking document in collection:', error);
+      throw error;
+  }
 }
 
-
-
-// Function to get all feedbacks for a user
-async function getUserFeedbacks(userId: string) {
-  const q = query(collection(db, "feedback"), where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => doc.data());
-}
-
-// Function to get all ads for a user
-async function getUserAds(userId: string) {
-  const q = query(collection(db, "ads"), where("userId", "==", userId));
-  const querySnapshot = await getDocs(q);
-  return querySnapshot.docs.map(doc => doc.data());
-}

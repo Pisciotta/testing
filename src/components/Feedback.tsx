@@ -29,7 +29,7 @@ const FeedbackForm: React.FC = () => {
   return (
     <div className='ion-text-center'>
         { showModal ? thanksForYourFeedback : <>
-            <IonLabel>Altre domande? Suggerimenti? Scrivi qui:</IonLabel>
+            <IonLabel>Altre domande? Suggerimenti? Segnalazioni? Scrivi qui:</IonLabel>
             <IonTextarea className="textarea-border" onIonChange ={handleFeedbackChange} >
                 {feedback}
             </IonTextarea>

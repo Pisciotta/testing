@@ -24,7 +24,7 @@ import '@ionic/react/css/display.css';
 /* Theme variables */
 import './theme/variables.css';
 import SignIn from './pages/SignIn';
-import { getPoints, isUserAuthenticated } from './components/foo';
+import { doesDocumentExist, getPoints, isUserAuthenticated } from './components/foo';
 import { INITIAL_SCORE, UserContext } from './components/constants';
 import Calculator from './components/Calculator';
 
@@ -45,7 +45,7 @@ const App: React.FC = () => {
 
   const checkAuth = useCallback(async () => {
     const authStatus = await isUserAuthenticated();
-    setIsAuth(authStatus);
+    setIsAuth(authStatus.isAuthenticated && authStatus.whitelisted);
   }, []);
 
   useEffect(() => {
@@ -65,6 +65,7 @@ const App: React.FC = () => {
     )
   }
 
+  
 
   return (
     isAuth ? (
