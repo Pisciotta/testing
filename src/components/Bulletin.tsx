@@ -120,7 +120,9 @@ export const BulletinBoard: React.FC = () => {
   }, []);
 
 
-
+  if(adsState?.length === 0  ){
+    return <div className="ion-text-center">Nessun evento</div>;
+  }
 
 
   if(score-MINUS_SCORE_FOR_PARTICIPATING < 0){

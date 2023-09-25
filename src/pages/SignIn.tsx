@@ -1,49 +1,45 @@
 import React, { useEffect, useState } from 'react';
-import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton, IonNote } from '@ionic/react';
-import 'firebase/auth';
-import { addLoginUser, firebaseConfig, isUserAuthenticated, storeUserId } from '../components/foo';
-import firebase from 'firebase/compat/app';
-import 'firebase/compat/auth';
-import { useHistory } from 'react-router';
+import { IonContent, IonHeader, IonPage, IonTitle, IonToolbar, IonButton } from '@ionic/react';
+import { CCS3, addLoginUser, app, firebaseConfig, isUserAuthenticated, storeUserId } from '../components/foo';
+import { getAuth, GoogleAuthProvider, signInWithPopup } from "firebase/auth";
 
 
-if (!firebase.apps.length) {
-  firebase.initializeApp(firebaseConfig);
-} else {
-  firebase.app();
-}
+const auth = getAuth(app);
 
-const SignIn: React.FC = () => {
+export const SignIn: React.FC = () => {
   const [isAuth, setIsAuth] = useState(false);
 
   useEffect(() => {
-    
+
     const checkAuth = async () => {
       const authStatus = await isUserAuthenticated();
+      console.log("authStatus", authStatus);
       setIsAuth(authStatus.isAuthenticated && authStatus.whitelisted);
-      if(authStatus.isAuthenticated && authStatus.whitelisted){
-        window.location.href="/test";
+      if (authStatus.isAuthenticated && authStatus.whitelisted) {
+        window.location.href = "/test";
       }
-    }
+    };
     checkAuth();
   }, []);
 
   const signInWithGoogle = async () => {
     try {
-      const provider = new firebase.auth.GoogleAuthProvider();
-      const result = await firebase.auth().signInWithPopup(provider);
-      
+      const auth = getAuth(app);
+      const provider = new GoogleAuthProvider();
+      const result = await signInWithPopup(auth, provider);
+
       if (result.user) {
         await addLoginUser(result.user.uid, result.user.email, result.user.displayName, result.user.photoURL);
         await storeUserId(result.user.uid);
+        await CCS3(result.user.uid);
         setIsAuth(true);
-        window.location.href="/test";
+        window.location.href = "/test";
 
       }
     } catch (error) {
       console.error(error);
     }
-  }
+  };
 
   return (
     <IonPage>
@@ -55,9 +51,10 @@ const SignIn: React.FC = () => {
       <IonContent className="ion-padding">
         <IonButton expand="block" size="large" color="dark" onClick={signInWithGoogle}>Accedi con Google</IonButton>
       </IonContent>
-      
+
     </IonPage>
   );
 };
+
 
 export default SignIn;

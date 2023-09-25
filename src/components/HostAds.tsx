@@ -199,10 +199,13 @@ export const HostAds: React.FC = () => {
   }, []);
 
 
-
-  if(adsState === undefined || queue.length === 0 || events.length === 0  ){
-    return <></>;
+  
+  if(adsState === undefined || queue.length === 0 || events?.length === 0 || adsState?.length === 0  ){
+    return <div className="ion-text-center">Nessun evento</div>;
   }
+
+  
+  
 
   
 

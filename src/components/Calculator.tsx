@@ -7,7 +7,6 @@ const Calculator: React.FC = () => {
   const [value, setValue] = useState("");
   const buttons = ['1', '2', '3', '+', '4', '5', '6', '-', '7', '8', '9', '*', '.', '0', '=', '/'];  
   const [mouseDown, setMouseDown] = useState(false);
-  const timerRef = useRef<NodeJS.Timeout | null>(null);
   
   const handleClick = (val: string) => {
     if (val === "=") {
@@ -24,18 +23,12 @@ const Calculator: React.FC = () => {
   const clearDisplay = () => setValue("");
 
   useEffect(() => {
-    if (mouseDown) {
-      timerRef.current = setTimeout(() => {
-        const today = new Date();
-        const dd = String(today.getDate()).padStart(2, '0');
-        const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
-        const yyyy = today.getFullYear();
-        if (value === dd + mm + yyyy) {
-          setSecret(true);
-        }
-      }, 3000);
-    } else {
-      clearTimeout(timerRef.current!);
+    const today = new Date();
+    const dd = String(today.getDate()).padStart(2, '0');
+    const mm = String(today.getMonth() + 1).padStart(2, '0'); //January is 0!
+    const yyyy = today.getFullYear();
+    if (value === dd + mm + yyyy) {
+        setSecret(true);
     }
   }, [mouseDown]);
 

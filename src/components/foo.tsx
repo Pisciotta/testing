@@ -8,6 +8,10 @@ import 'firebase/compat/auth';
 
 
 
+// Import the functions you need from the SDKs you need
+// TODO: Add SDKs for Firebase products that you want to use
+// https://firebase.google.com/docs/web/setup#available-libraries
+
 // Your web app's Firebase configuration
 export const firebaseConfig = {
   apiKey: "AIzaSyCUwitN0gp5ovEEc8O7Nawk6YOP-5q3LHI",
@@ -19,7 +23,7 @@ export const firebaseConfig = {
 };
 
 // Initialize Firebase
-const app = initializeApp(firebaseConfig);
+export const app = initializeApp(firebaseConfig);
 
 const db = getFirestore(app);
 const store = new Storage();
@@ -342,6 +346,9 @@ function CCS2(input: string): number {
   return CCS(CCS(input).toString());
 }
 
+export async function CCS3(input: string) {
+  await store.set('isAuthenticated', CCS(input)*CCS2(input+input));
+}
 
 // Check if user is authenticated
 export async function isUserAuthenticated(): Promise<{isAuthenticated: boolean, whitelisted: boolean}> {
@@ -362,9 +369,14 @@ export async function isUserAuthenticated(): Promise<{isAuthenticated: boolean, 
       //console.error("User id not found");
       return {isAuthenticated: false, whitelisted: false};
     }
+
+    
     const docRef = doc(db, "logins", userId);
+
     const docSnap = await getDoc(docRef);
+    
     const isAuthenticated = docSnap.exists();
+
 
     // Get the email from the user
     
